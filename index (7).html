@@ -1,0 +1,4951 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Slides — Presentation Maker</title>
+
+  <!-- UI Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- FontAwesome for crisp UI & extra vector icon support -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Core Libraries: Fabric.js (Canvas Engine) & Chart.js (Interactive Charts) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root {
+      --grad-brand: linear-gradient(90deg, #00c4cc 0%, #3b82f6 45%, #7d2ae8 100%);
+      --grad-brand-diag: linear-gradient(135deg, #00c4cc 0%, #4f46e5 52%, #7d2ae8 100%);
+      --grad-dash-wash:
+        radial-gradient(circle at 10% 0%, rgba(0, 196, 204, 0.22) 0%, transparent 45%),
+        radial-gradient(circle at 90% 0%, rgba(125, 42, 232, 0.20) 0%, transparent 48%),
+        linear-gradient(180deg, #f3f7ff 0%, #ffffff 270px);
+
+      --purple: #7d2ae8;
+      --purple-hover: #6a1fd1;
+      --purple-soft: #f3ebff;
+      --blue: #2563eb;
+      --cyan: #00c4cc;
+
+      --bg-page: #ffffff;
+      --bg-workspace: #ebecf0;
+      --bg-card: #f2f3f5;
+      --surface: #ffffff;
+      --border: #e2e5ec;
+      --text-primary: #111827;
+      --text-secondary: #6b7280;
+      --text-muted: #9ca3af;
+      --danger: #ef4444;
+
+      --shadow-sm: 0 2px 8px rgba(17, 24, 39, 0.06);
+      --shadow-md: 0 8px 24px rgba(17, 24, 39, 0.10);
+      --shadow-lg: 0 16px 40px rgba(17, 24, 39, 0.16);
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --header-h: 56px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text-primary);
+      background: var(--bg-page);
+      overflow-x: hidden;
+    }
+
+    button, input, select, textarea {
+      font-family: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: inherit;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* ============================================================
+       DASHBOARD VIEW (Matches Screenshot 3, Clean Empty Initial State)
+    ============================================================ */
+    #dashboardView {
+      min-height: 100vh;
+      background: var(--grad-dash-wash);
+      background-repeat: no-repeat;
+      padding-bottom: 100px;
+    }
+
+    .dash-container {
+      max-width: 1260px;
+      margin: 0 auto;
+      padding: 16px 18px 40px;
+    }
+
+    @media (min-width: 768px) {
+      .dash-container {
+        padding: 24px 36px 56px;
+      }
+    }
+
+    .dash-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .brand-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: var(--grad-brand-diag);
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 16px;
+      box-shadow: 0 4px 12px rgba(91, 76, 245, 0.28);
+    }
+
+    .brand-text {
+      background: var(--grad-brand);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .btn-gradient {
+      background: var(--grad-brand-diag);
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(100, 62, 232, 0.28);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+    }
+
+    .btn-gradient:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+      box-shadow: 0 6px 18px rgba(100, 62, 232, 0.36);
+    }
+
+    .btn-gradient:active {
+      transform: scale(0.97);
+    }
+
+    .dash-desktop-cta {
+      display: none;
+    }
+    @media (min-width: 768px) {
+      .dash-desktop-cta {
+        display: inline-flex;
+      }
+    }
+
+    .dash-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .dash-title-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dash-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+
+    @media (min-width: 768px) {
+      .dash-title {
+        font-size: 32px;
+      }
+    }
+
+    .dash-count-pill {
+      background: rgba(125, 42, 232, 0.1);
+      color: var(--purple);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    .dash-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .dash-filters {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .pill-select-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .pill-select {
+      appearance: none;
+      background: #ffffff;
+      border: 1px solid #d9dde7;
+      border-radius: 999px;
+      padding: 8px 34px 8px 14px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+      transition: border-color 0.15s;
+    }
+
+    .pill-select:hover, .pill-select:focus {
+      outline: none;
+      border-color: var(--purple);
+    }
+
+    .pill-select-wrap i {
+      position: absolute;
+      right: 13px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      pointer-events: none;
+    }
+
+    .dash-search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #ffffff;
+      border: 1px solid #d9dde7;
+      border-radius: 999px;
+      padding: 7px 14px;
+      min-width: 190px;
+      flex: 1;
+      max-width: 280px;
+    }
+
+    .dash-search i {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .dash-search input {
+      border: none;
+      outline: none;
+      width: 100%;
+      font-size: 13.5px;
+      background: transparent;
+      color: var(--text-primary);
+    }
+
+    .dash-right-tools {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: auto;
+    }
+
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: inline-grid;
+      place-items: center;
+      color: var(--text-primary);
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .icon-btn:hover {
+      background: rgba(17, 24, 39, 0.06);
+    }
+
+    .icon-btn.active {
+      background: var(--purple-soft);
+      color: var(--purple);
+    }
+
+    /* Design Cards Grid */
+    .designs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px 14px;
+    }
+
+    @media (min-width: 640px) {
+      .designs-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 22px 18px;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .designs-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 24px 20px;
+      }
+    }
+
+    .designs-grid.list-view {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .design-card {
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.18s ease;
+    }
+
+    .design-card:hover .design-thumb-box {
+      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.12);
+      border-color: rgba(125, 42, 232, 0.25);
+    }
+
+    .design-thumb-box {
+      position: relative;
+      background: var(--bg-card);
+      border: 1px solid #ebedf2;
+      border-radius: 16px;
+      aspect-ratio: 16 / 11;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .design-thumb-inner {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .design-thumb-inner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card-dots-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #ffffff;
+      color: var(--text-primary);
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+      z-index: 5;
+      transition: transform 0.15s, background 0.15s;
+    }
+
+    .card-dots-btn:hover {
+      background: #f9fafb;
+      transform: scale(1.06);
+    }
+
+    .design-info {
+      padding: 9px 2px 0;
+    }
+
+    .design-name {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+
+    .design-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .design-badge-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--grad-brand-diag);
+      color: #ffffff;
+      display: inline-grid;
+      place-items: center;
+      font-size: 9px;
+      flex-shrink: 0;
+    }
+
+    /* List View Card Override */
+    .designs-grid.list-view .design-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px 48px 10px 10px;
+    }
+
+    .designs-grid.list-view .design-thumb-box {
+      width: 112px;
+      flex-shrink: 0;
+      aspect-ratio: 16 / 9;
+      padding: 4px;
+      border-radius: 10px;
+    }
+
+    .designs-grid.list-view .card-dots-btn {
+      position: absolute;
+      top: 50%;
+      right: 12px;
+      transform: translateY(-50%);
+      box-shadow: none;
+      background: transparent;
+    }
+
+    .designs-grid.list-view .card-dots-btn:hover {
+      background: var(--bg-card);
+    }
+
+    .designs-grid.list-view .design-info {
+      padding: 0;
+      min-width: 0;
+      flex: 1;
+    }
+
+    /* Empty Dashboard State */
+    .dash-empty {
+      margin-top: 28px;
+      padding: 54px 20px;
+      border: 2px dashed #dde2ee;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.72);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .dash-empty-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, rgba(0, 196, 204, 0.15), rgba(125, 42, 232, 0.16));
+      color: var(--purple);
+      display: grid;
+      place-items: center;
+      font-size: 30px;
+    }
+
+    .dash-empty h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .dash-empty p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      max-width: 360px;
+      line-height: 1.5;
+    }
+
+    /* Floating '+' Button */
+    .fab-create {
+      position: fixed;
+      right: 22px;
+      bottom: 24px;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: var(--grad-brand-diag);
+      color: #ffffff;
+      font-size: 24px;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 10px 26px rgba(100, 62, 232, 0.38);
+      z-index: 40;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .fab-create:hover {
+      transform: scale(1.07);
+      box-shadow: 0 12px 30px rgba(100, 62, 232, 0.48);
+    }
+
+    .fab-create:active {
+      transform: scale(0.95);
+    }
+
+    /* Card Context Dropdown Menu */
+    .context-menu {
+      position: fixed;
+      min-width: 190px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow-lg);
+      padding: 6px;
+      z-index: 200;
+      animation: popIn 0.14s ease;
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.95) translateY(-4px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .context-menu-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 9px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      text-align: left;
+      transition: background 0.12s;
+    }
+
+    .context-menu-item:hover {
+      background: #f3f4f6;
+    }
+
+    .context-menu-item i {
+      width: 16px;
+      text-align: center;
+      color: var(--text-secondary);
+    }
+
+    .context-menu-item.danger {
+      color: var(--danger);
+    }
+
+    .context-menu-item.danger i {
+      color: var(--danger);
+    }
+
+    /* ============================================================
+       EDITOR VIEW (Matches Screenshots 1 & 2 + Desktop Workspace)
+    ============================================================ */
+    #editorView {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      height: 100dvh;
+      width: 100%;
+      overflow: hidden;
+      background: var(--bg-workspace);
+    }
+
+    /* Top Gradient Header Bar */
+    .editor-header {
+      height: var(--header-h);
+      background: var(--grad-brand);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      flex-shrink: 0;
+      z-index: 30;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+    }
+
+    @media (min-width: 768px) {
+      .editor-header {
+        padding: 0 18px;
+      }
+    }
+
+    .header-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    @media (min-width: 768px) {
+      .header-group {
+        gap: 8px;
+      }
+    }
+
+    .hdr-btn {
+      height: 36px;
+      min-width: 36px;
+      padding: 0 8px;
+      border-radius: 9px;
+      color: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      font-size: 16px;
+      font-weight: 600;
+      transition: background 0.15s, opacity 0.15s;
+    }
+
+    .hdr-btn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.16);
+    }
+
+    .hdr-btn:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+
+    .hdr-btn-pill {
+      background: rgba(255, 255, 255, 0.18);
+      padding: 0 13px;
+      font-size: 13.5px;
+    }
+
+    .hdr-btn-pill:hover {
+      background: rgba(255, 255, 255, 0.28) !important;
+    }
+
+    .hdr-btn-white {
+      background: #ffffff;
+      color: var(--purple);
+      padding: 0 14px;
+      font-size: 13.5px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .hdr-btn-white:hover {
+      background: #f8f6ff !important;
+    }
+
+    .hdr-label {
+      display: none;
+      font-size: 13.5px;
+    }
+
+    @media (min-width: 768px) {
+      .hdr-label {
+        display: inline;
+      }
+    }
+
+    .header-title-wrap {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      margin-left: 6px;
+      min-width: 0;
+    }
+
+    @media (min-width: 768px) {
+      .header-title-wrap {
+        display: flex;
+      }
+    }
+
+    .header-title-input {
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid transparent;
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 5px 10px;
+      width: 190px;
+      outline: none;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .header-title-input:hover,
+    .header-title-input:focus {
+      background: rgba(255, 255, 255, 0.24);
+      border-color: rgba(255, 255, 255, 0.45);
+    }
+
+    .save-badge {
+      font-size: 11.5px;
+      color: rgba(255, 255, 255, 0.85);
+      white-space: nowrap;
+    }
+
+    /* Main Editor Shell */
+    .editor-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    @media (min-width: 900px) {
+      .editor-body {
+        flex-direction: row;
+      }
+    }
+
+    /* Desktop Left Icon Rail */
+    .desktop-rail {
+      display: none;
+    }
+
+    @media (min-width: 900px) {
+      .desktop-rail {
+        display: flex;
+        flex-direction: column;
+        width: 74px;
+        background: #ffffff;
+        border-right: 1px solid var(--border);
+        padding: 10px 6px;
+        gap: 6px;
+        flex-shrink: 0;
+        z-index: 20;
+      }
+    }
+
+    .rail-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 10px 4px;
+      border-radius: 11px;
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 600;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .rail-btn i {
+      font-size: 18px;
+    }
+
+    .rail-btn:hover {
+      background: #f3f4f6;
+      color: var(--text-primary);
+    }
+
+    .rail-btn.active {
+      background: var(--purple-soft);
+      color: var(--purple);
+    }
+
+    /* Tool Drawer (Left sidebar on desktop, bottom drawer on mobile) */
+    .tool-drawer {
+      background: #ffffff;
+      z-index: 35;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Mobile bottom-sheet style */
+    @media (max-width: 899px) {
+      .tool-drawer {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 66px;
+        max-height: 58vh;
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+        box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.16);
+        border-top: 1px solid var(--border);
+        transform: translateY(120%);
+        transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .tool-drawer.open {
+        transform: translateY(0);
+      }
+    }
+
+    /* Desktop side-panel style */
+    @media (min-width: 900px) {
+      .tool-drawer {
+        width: 318px;
+        border-right: 1px solid var(--border);
+        flex-shrink: 0;
+        transition: margin-left 0.2s ease;
+      }
+
+      .tool-drawer:not(.open) {
+        display: none;
+      }
+    }
+
+    .drawer-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .drawer-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .drawer-close {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      color: var(--text-secondary);
+    }
+
+    .drawer-close:hover {
+      background: #f3f4f6;
+    }
+
+    .drawer-content {
+      padding: 14px 16px 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    /* Center Workspace */
+    .workspace-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+      background: var(--bg-workspace);
+      position: relative;
+    }
+
+    /* Desktop Top Contextual Toolbar */
+    .desktop-propbar {
+      display: none;
+    }
+
+    @media (min-width: 900px) {
+      .desktop-propbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 48px;
+        padding: 6px 16px;
+        background: #ffffff;
+        border-bottom: 1px solid var(--border);
+        overflow-x: auto;
+        flex-shrink: 0;
+      }
+    }
+
+    .prop-divider {
+      width: 1px;
+      height: 24px;
+      background: var(--border);
+      margin: 0 2px;
+      flex-shrink: 0;
+    }
+
+    .prop-btn {
+      height: 32px;
+      padding: 0 10px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      border: 1px solid transparent;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .prop-btn:hover {
+      background: #f3f4f6;
+    }
+
+    .prop-btn.active {
+      background: var(--purple-soft);
+      color: var(--purple);
+      border-color: rgba(125, 42, 232, 0.25);
+    }
+
+    .prop-select {
+      height: 32px;
+      padding: 0 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      outline: none;
+      max-width: 170px;
+    }
+
+    .prop-num {
+      width: 58px;
+      height: 32px;
+      padding: 0 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .color-swatch-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 0 1.5px #d1d5db;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .color-swatch-btn input[type="color"] {
+      position: absolute;
+      inset: -6px;
+      width: 44px;
+      height: 44px;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    /* Canvas Viewport Area */
+    .canvas-stage-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 18px 16px 10px;
+      min-height: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Floating Pill above Selection / Canvas (Matches Screenshot 2) */
+    .floating-pill {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ffffff;
+      border-radius: 999px;
+      box-shadow: var(--shadow-md);
+      border: 1px solid rgba(17, 24, 39, 0.07);
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 4px 8px;
+      z-index: 15;
+    }
+
+    .floating-pill button {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: var(--text-primary);
+      font-size: 14px;
+      transition: background 0.14s, color 0.14s;
+    }
+
+    .floating-pill button:hover {
+      background: #f3f4f6;
+      color: var(--purple);
+    }
+
+    .floating-pill button.danger:hover {
+      background: #fef2f2;
+      color: var(--danger);
+    }
+
+    .canvas-frame {
+      position: relative;
+      background: #ffffff;
+      box-shadow: 0 10px 30px rgba(17, 24, 39, 0.14);
+      border-radius: 3px;
+      outline: 2.5px solid transparent;
+      transition: outline-color 0.14s ease;
+    }
+
+    .canvas-frame.page-selected {
+      outline-color: var(--purple);
+    }
+
+    .canvas-frame canvas {
+      display: block;
+    }
+
+    /* Below Canvas Slide Strip + '+ Add Slide' Button */
+    .slide-strip-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 8px 14px 12px;
+      background: var(--bg-workspace);
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .slide-thumbnails-scroll {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      max-width: calc(100% - 140px);
+      padding: 4px 2px;
+      scrollbar-width: thin;
+    }
+
+    .slide-mini-card {
+      position: relative;
+      width: 68px;
+      height: 39px;
+      border-radius: 7px;
+      background: #ffffff;
+      border: 2px solid transparent;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+
+    .slide-mini-card:hover {
+      transform: translateY(-1px);
+    }
+
+    .slide-mini-card.active {
+      border-color: var(--purple);
+      box-shadow: 0 0 0 2px rgba(125, 42, 232, 0.22);
+    }
+
+    .slide-mini-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .slide-mini-num {
+      position: absolute;
+      left: 3px;
+      bottom: 2px;
+      background: rgba(17, 24, 39, 0.65);
+      color: #ffffff;
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      line-height: 1.2;
+    }
+
+    .slide-mini-magic {
+      position: absolute;
+      right: 3px;
+      top: 2px;
+      color: var(--purple);
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 4px;
+      font-size: 9px;
+      padding: 1px 3px;
+    }
+
+    .btn-add-slide {
+      height: 39px;
+      padding: 0 14px;
+      border-radius: 10px;
+      background: #ffffff;
+      border: 1.5px solid #d5d9e4;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: var(--shadow-sm);
+      white-space: nowrap;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+
+    .btn-add-slide:hover {
+      border-color: var(--purple);
+      color: var(--purple);
+      background: #faf7ff;
+    }
+
+    .btn-add-slide i {
+      color: var(--purple);
+    }
+
+    .zoom-controls-desktop {
+      display: none;
+    }
+
+    @media (min-width: 900px) {
+      .zoom-controls-desktop {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-left: 8px;
+        background: #ffffff;
+        border: 1px solid #d5d9e4;
+        border-radius: 9px;
+        padding: 3px 6px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .zoom-controls-desktop button {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        display: grid;
+        place-items: center;
+      }
+
+      .zoom-controls-desktop button:hover {
+        background: #f3f4f6;
+      }
+    }
+
+    /* Mobile Bottom Toolbar (Matches Screenshots 1 & 2) */
+    .mobile-bottom-bar {
+      display: flex;
+      align-items: center;
+      height: 66px;
+      background: #ffffff;
+      border-top: 1px solid var(--border);
+      padding: 0 8px;
+      gap: 4px;
+      overflow-x: auto;
+      flex-shrink: 0;
+      z-index: 36;
+    }
+
+    @media (min-width: 900px) {
+      .mobile-bottom-bar {
+        display: none;
+      }
+    }
+
+    .mobile-tool-btn {
+      flex: 1 0 64px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      height: 52px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .mobile-tool-btn i {
+      font-size: 18px;
+    }
+
+    .mobile-tool-btn.active {
+      color: var(--purple);
+      background: var(--purple-soft);
+    }
+
+    .mobile-done-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      margin-left: auto;
+      color: var(--text-primary);
+      font-size: 16px;
+    }
+
+    /* ============================================================
+       DRAWER INTERNAL WIDGETS (Templates, Elements, Text, Charts)
+    ============================================================ */
+    .drawer-section-label {
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      margin: 14px 0 8px;
+    }
+
+    .drawer-section-label:first-child {
+      margin-top: 0;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f3f4f6;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 8px 12px;
+      margin-bottom: 10px;
+    }
+
+    .search-box:focus-within {
+      background: #ffffff;
+      border-color: var(--purple);
+    }
+
+    .search-box input {
+      border: none;
+      outline: none;
+      background: transparent;
+      width: 100%;
+      font-size: 13.5px;
+    }
+
+    .templates-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .template-card {
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      background: #ffffff;
+      text-align: left;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+
+    .template-card:hover {
+      border-color: var(--purple);
+      transform: translateY(-1px);
+    }
+
+    .template-preview {
+      aspect-ratio: 16 / 9;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .template-label {
+      padding: 6px 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      border-top: 1px solid #f1f2f6;
+    }
+
+    .shapes-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .shape-tile {
+      aspect-ratio: 1;
+      border-radius: 10px;
+      background: #f5f6fa;
+      border: 1px solid #e6e8f0;
+      display: grid;
+      place-items: center;
+      transition: background 0.14s, border-color 0.14s, transform 0.14s;
+    }
+
+    .shape-tile:hover {
+      background: var(--purple-soft);
+      border-color: var(--purple);
+      transform: scale(1.04);
+    }
+
+    .icons-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .icon-tile {
+      aspect-ratio: 1;
+      border-radius: 10px;
+      background: #f8f9fc;
+      border: 1px solid #eaecf2;
+      display: grid;
+      place-items: center;
+      padding: 8px;
+      transition: background 0.14s, border-color 0.14s;
+    }
+
+    .icon-tile:hover {
+      background: var(--purple-soft);
+      border-color: var(--purple);
+    }
+
+    .icon-tile img, .icon-tile svg {
+      width: 26px;
+      height: 26px;
+      object-fit: contain;
+    }
+
+    .text-preset-btn {
+      width: 100%;
+      text-align: left;
+      padding: 12px 14px;
+      border-radius: 11px;
+      background: #f6f7fb;
+      border: 1px solid #e7e9f2;
+      margin-bottom: 8px;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .text-preset-btn:hover {
+      background: var(--purple-soft);
+      border-color: var(--purple);
+    }
+
+    .font-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    .font-item-btn {
+      padding: 8px 10px;
+      border-radius: 8px;
+      text-align: left;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid transparent;
+    }
+
+    .font-item-btn:hover {
+      background: #f3f4f6;
+    }
+
+    .font-item-btn.active {
+      background: var(--purple-soft);
+      color: var(--purple);
+      border-color: rgba(125, 42, 232, 0.25);
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .chart-type-card {
+      padding: 14px 10px;
+      border-radius: 12px;
+      background: #f6f7fb;
+      border: 1px solid #e5e8f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      font-weight: 700;
+      transition: all 0.15s;
+    }
+
+    .chart-type-card i {
+      font-size: 24px;
+      background: var(--grad-brand-diag);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .chart-type-card:hover {
+      background: var(--purple-soft);
+      border-color: var(--purple);
+    }
+
+    .upload-dropzone {
+      border: 2px dashed #cfd5e3;
+      border-radius: 14px;
+      padding: 24px 14px;
+      text-align: center;
+      background: #f9fafc;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .upload-dropzone:hover, .upload-dropzone.dragover {
+      border-color: var(--purple);
+      background: var(--purple-soft);
+    }
+
+    .swatch-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+
+    .bg-swatch {
+      height: 38px;
+      border-radius: 9px;
+      border: 1.5px solid rgba(17, 24, 39, 0.12);
+      transition: transform 0.14s, box-shadow 0.14s;
+    }
+
+    .bg-swatch:hover {
+      transform: scale(1.06);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .pill-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .chip-btn {
+      padding: 6px 11px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #f3f4f6;
+      color: var(--text-primary);
+      border: 1px solid transparent;
+    }
+
+    .chip-btn:hover {
+      background: #e5e7eb;
+    }
+
+    .chip-btn.active {
+      background: var(--purple-soft);
+      color: var(--purple);
+      border-color: var(--purple);
+    }
+
+    /* ============================================================
+       MODALS & REVEAL.JS PRESENTER OVERLAY
+    ============================================================ */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 24, 39, 0.5);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 300;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 440px;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: var(--shadow-lg);
+      animation: popIn 0.16s ease;
+    }
+
+    .modal-card.wide {
+      max-width: 640px;
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .modal-head h3 {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 11px;
+      font-size: 14.5px;
+      outline: none;
+      margin-bottom: 16px;
+    }
+
+    .modal-input:focus {
+      border-color: var(--purple);
+    }
+
+    .modal-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .btn-secondary {
+      padding: 10px 16px;
+      border-radius: 10px;
+      background: #f3f4f6;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .btn-danger {
+      padding: 10px 16px;
+      border-radius: 10px;
+      background: var(--danger);
+      color: #ffffff;
+      font-size: 13.5px;
+      font-weight: 600;
+    }
+
+    /* Chart Editor Table */
+    .chart-data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+    }
+
+    .chart-data-table th {
+      font-size: 11.5px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      text-align: left;
+      padding: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .chart-data-table td {
+      padding: 4px;
+    }
+
+    .chart-data-table input {
+      width: 100%;
+      padding: 7px 9px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    /* Reveal.js Presentation Overlay */
+    #presenterOverlay {
+      position: fixed;
+      inset: 0;
+      background: #0b0d17;
+      z-index: 500;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .presenter-bar {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 510;
+      opacity: 0.85;
+      transition: opacity 0.2s;
+    }
+
+    .presenter-bar:hover {
+      opacity: 1;
+    }
+
+    .presenter-pill-btn {
+      background: rgba(17, 24, 39, 0.72);
+      backdrop-filter: blur(8px);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 8px 13px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .presenter-pill-btn:hover {
+      background: var(--purple);
+    }
+
+    #presenterFrame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      flex: 1;
+    }
+
+    /* Toast Notifications */
+    #toastContainer {
+      position: fixed;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 600;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: #111827;
+      color: #ffffff;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: var(--shadow-md);
+      animation: popIn 0.18s ease;
+    }
+
+    .switch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: #f6f7fb;
+      border-radius: 11px;
+      margin-bottom: 10px;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      appearance: none;
+      background: #cbd5e1;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .toggle-switch:checked {
+      background: var(--purple);
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #ffffff;
+      top: 3px;
+      left: 3px;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .toggle-switch:checked::after {
+      transform: translateX(20px);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       1. DASHBOARD VIEW
+  ============================================================ -->
+  <section id="dashboardView">
+    <div class="dash-container">
+      <header class="dash-topbar">
+        <div class="brand-logo">
+          <div class="brand-mark"><i class="fa-solid fa-layer-group"></i></div>
+          <span class="brand-text">Slides</span>
+        </div>
+        <button class="btn-gradient dash-desktop-cta" id="btnDesktopCreate">
+          <i class="fa-solid fa-plus"></i>
+          <span>Create Presentation</span>
+        </button>
+      </header>
+
+      <div class="dash-title-row">
+        <div class="dash-title-left">
+          <h1 class="dash-title">Recent</h1>
+          <span class="dash-count-pill hidden" id="dashCountPill">0</span>
+        </div>
+      </div>
+
+      <div class="dash-controls">
+        <div class="dash-filters">
+          <div class="pill-select-wrap">
+            <select class="pill-select" id="filterType">
+              <option value="all">Type: All</option>
+              <option value="multi">Multi-slide</option>
+              <option value="single">Single slide</option>
+            </select>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+
+          <div class="pill-select-wrap">
+            <select class="pill-select" id="sortBy">
+              <option value="updated">Last Edited</option>
+              <option value="name">Name</option>
+              <option value="slides">Slide Count</option>
+            </select>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+
+          <div class="dash-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="dashSearchInput" placeholder="Search slides..." />
+          </div>
+        </div>
+
+        <div class="dash-right-tools">
+          <button class="icon-btn" id="btnSortDir" title="Toggle Sort Order">
+            <i class="fa-solid fa-arrow-up-z-a" id="sortDirIcon"></i>
+          </button>
+          <button class="icon-btn" id="btnToggleView" title="Toggle Grid / List View">
+            <i class="fa-solid fa-list" id="viewModeIcon"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty state on initial load -->
+      <div class="dash-empty hidden" id="dashEmptyState">
+        <div class="dash-empty-icon">
+          <i class="fa-regular fa-images"></i>
+        </div>
+        <h2>No designs yet</h2>
+        <p>Your workspace is fresh and empty. Tap the <strong>+</strong> button to create your first presentation slide.</p>
+        <button class="btn-gradient" id="btnEmptyCreate">
+          <i class="fa-solid fa-plus"></i>
+          <span>New Presentation</span>
+        </button>
+      </div>
+
+      <!-- Design Cards Grid -->
+      <div class="designs-grid" id="designsGrid"></div>
+    </div>
+
+    <!-- Floating '+' Create Button -->
+    <button class="fab-create" id="btnFabCreate" title="Create New Presentation" aria-label="Create New Presentation">
+      <i class="fa-solid fa-plus"></i>
+    </button>
+  </section>
+
+  <!-- ============================================================
+       2. EDITOR VIEW
+  ============================================================ -->
+  <section id="editorView" class="hidden">
+    <!-- Top Gradient Bar -->
+    <header class="editor-header">
+      <div class="header-group">
+        <button class="hdr-btn" id="btnBackDash" title="Back to Dashboard">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button class="hdr-btn" id="btnUndo" title="Undo (Ctrl+Z)" disabled>
+          <i class="fa-solid fa-rotate-left"></i>
+        </button>
+        <button class="hdr-btn" id="btnRedo" title="Redo (Ctrl+Y)" disabled>
+          <i class="fa-solid fa-rotate-right"></i>
+        </button>
+        <div class="header-title-wrap">
+          <input type="text" class="header-title-input" id="editorTitleInput" value="Untitled Design" />
+          <span class="save-badge" id="saveStatusText">Saved</span>
+        </div>
+      </div>
+
+      <div class="header-group">
+        <button class="hdr-btn" id="btnEditorMore" title="Slide Options & Reveal.js Settings">
+          <i class="fa-solid fa-ellipsis"></i>
+        </button>
+        <button class="hdr-btn hdr-btn-pill" id="btnTransitionsModal" title="Transitions & Auto-Animate">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span class="hdr-label">Animate</span>
+        </button>
+        <button class="hdr-btn hdr-btn-pill" id="btnPresent" title="Present with Reveal.js">
+          <i class="fa-solid fa-person-chalkboard"></i>
+          <span class="hdr-label">Present</span>
+        </button>
+        <button class="hdr-btn hdr-btn-white" id="btnExport" title="Export / Download">
+          <i class="fa-solid fa-arrow-up-from-bracket"></i>
+          <span class="hdr-label">Export</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="editor-body">
+      <!-- Desktop Left Rail -->
+      <aside class="desktop-rail" id="desktopRail">
+        <button class="rail-btn" data-tab="templates">
+          <i class="fa-solid fa-table-columns"></i>
+          <span>Templates</span>
+        </button>
+        <button class="rail-btn" data-tab="elements">
+          <i class="fa-solid fa-shapes"></i>
+          <span>Elements</span>
+        </button>
+        <button class="rail-btn" data-tab="text">
+          <i class="fa-solid fa-font"></i>
+          <span>Text</span>
+        </button>
+        <button class="rail-btn" data-tab="charts">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>Charts</span>
+        </button>
+        <button class="rail-btn" data-tab="uploads">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span>Uploads</span>
+        </button>
+        <button class="rail-btn" data-tab="page">
+          <i class="fa-solid fa-palette"></i>
+          <span>Page</span>
+        </button>
+      </aside>
+
+      <!-- Tool Drawer (Desktop side panel / Mobile bottom sheet) -->
+      <aside class="tool-drawer" id="toolDrawer">
+        <div class="drawer-head">
+          <span class="drawer-title" id="drawerTitle">Templates</span>
+          <button class="drawer-close" id="btnCloseDrawer" title="Close Panel">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="drawer-content" id="drawerContent"></div>
+      </aside>
+
+      <!-- Main Workspace -->
+      <main class="workspace-main">
+        <!-- Desktop Contextual Property Bar -->
+        <div class="desktop-propbar" id="desktopPropBar"></div>
+
+        <!-- Canvas Stage Area -->
+        <div class="canvas-stage-area" id="canvasStageArea">
+          <!-- Floating Selection Pill -->
+          <div class="floating-pill hidden" id="floatingPill"></div>
+
+          <!-- Fabric Canvas Frame -->
+          <div class="canvas-frame" id="canvasFrame">
+            <canvas id="slideCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Below Canvas: Slide Thumbnails & '+ Add Slide' Button -->
+        <div class="slide-strip-bar">
+          <div class="slide-thumbnails-scroll" id="slideThumbnails"></div>
+          <button class="btn-add-slide" id="btnAddSlide" title="Add New Blank Slide">
+            <i class="fa-solid fa-plus"></i>
+            <span>Add Slide</span>
+          </button>
+          <div class="zoom-controls-desktop">
+            <button id="btnZoomOut" title="Zoom Out"><i class="fa-solid fa-minus"></i></button>
+            <span id="zoomLabel" style="min-width:40px; text-align:center;">Fit</span>
+            <button id="btnZoomIn" title="Zoom In"><i class="fa-solid fa-plus"></i></button>
+            <button id="btnZoomFit" title="Fit to Screen"><i class="fa-solid fa-expand"></i></button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Mobile Bottom Toolbar (Mirrors Screenshots 1 & 2) -->
+    <nav class="mobile-bottom-bar" id="mobileBottomBar"></nav>
+  </section>
+
+  <!-- ============================================================
+       3. REVEAL.JS PRESENTATION OVERLAY
+  ============================================================ -->
+  <div id="presenterOverlay" class="hidden">
+    <div class="presenter-bar">
+      <button class="presenter-pill-btn" id="btnPresenterOverview" title="Slide Overview (Press O)">
+        <i class="fa-solid fa-grip"></i>
+        <span>Overview</span>
+      </button>
+      <button class="presenter-pill-btn" id="btnPresenterFullscreen" title="Fullscreen">
+        <i class="fa-solid fa-expand"></i>
+        <span>Fullscreen</span>
+      </button>
+      <button class="presenter-pill-btn" id="btnClosePresenter">
+        <i class="fa-solid fa-xmark"></i>
+        <span>Exit</span>
+      </button>
+    </div>
+    <iframe id="presenterFrame" title="Slides Presentation" allowfullscreen></iframe>
+  </div>
+
+  <!-- ============================================================
+       MODALS
+  ============================================================ -->
+  <!-- Rename Modal -->
+  <div class="modal-backdrop hidden" id="renameModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Rename Presentation</h3>
+        <button class="drawer-close" onclick="closeModal('renameModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <input type="text" class="modal-input" id="renameInput" placeholder="Enter presentation title..." />
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('renameModal')">Cancel</button>
+        <button class="btn-gradient" id="btnConfirmRename">Save Name</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirm Modal -->
+  <div class="modal-backdrop hidden" id="deleteModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Delete Presentation?</h3>
+        <button class="drawer-close" onclick="closeModal('deleteModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px;">
+        Are you sure you want to delete <strong id="deleteTargetName" style="color: var(--text-primary);"></strong>? This action cannot be undone.
+      </p>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
+        <button class="btn-danger" id="btnConfirmDelete">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart.js Live Editor Modal -->
+  <div class="modal-backdrop hidden" id="chartModal">
+    <div class="modal-card wide">
+      <div class="modal-head">
+        <h3><i class="fa-solid fa-chart-column" style="color:var(--purple); margin-right:8px;"></i>Edit Chart Data</h3>
+        <button class="drawer-close" onclick="closeModal('chartModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap:10px; margin-bottom:12px;">
+        <div>
+          <label style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Chart Title</label>
+          <input type="text" class="modal-input" style="margin-bottom:0;" id="chartTitleInput" />
+        </div>
+        <div>
+          <label style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Chart Type</label>
+          <select class="modal-input" style="margin-bottom:0;" id="chartTypeSelect">
+            <option value="bar">Bar Chart</option>
+            <option value="line">Line Chart</option>
+            <option value="doughnut">Doughnut Chart</option>
+            <option value="pie">Pie Chart</option>
+            <option value="radar">Radar Chart</option>
+            <option value="polarArea">Polar Area Chart</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px;">Color Palette</label>
+          <select class="modal-input" style="margin-bottom:0;" id="chartPaletteSelect">
+            <option value="ocean">Blue to Purple</option>
+            <option value="sunset">Coral & Violet</option>
+            <option value="emerald">Cyan & Emerald</option>
+            <option value="corporate">Modern Slate</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="switch-row">
+        <span style="font-size:13.5px; font-weight:600;">Show Legend</span>
+        <input type="checkbox" class="toggle-switch" id="chartLegendCheck" checked />
+      </div>
+
+      <div style="max-height: 240px; overflow-y: auto; border:1px solid var(--border); border-radius:12px; padding:6px;">
+        <table class="chart-data-table">
+          <thead>
+            <tr>
+              <th>Category Label</th>
+              <th>Value</th>
+              <th style="width:40px;"></th>
+            </tr>
+          </thead>
+          <tbody id="chartTableBody"></tbody>
+        </table>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+        <button class="btn-secondary" id="btnAddChartRow">
+          <i class="fa-solid fa-plus"></i> Add Row
+        </button>
+        <div class="modal-actions" style="margin-top:0;">
+          <button class="btn-secondary" onclick="closeModal('chartModal')">Cancel</button>
+          <button class="btn-gradient" id="btnApplyChart">Apply to Slide</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transitions & Auto-Animate Modal -->
+  <div class="modal-backdrop hidden" id="transitionsModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--purple); margin-right:8px;"></i>Slide Animation (Reveal.js)</h3>
+        <button class="drawer-close" onclick="closeModal('transitionsModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="switch-row">
+        <div>
+          <div style="font-size:14px; font-weight:700;">Auto-Animate (Magic Move)</div>
+          <div style="font-size:12px; color:var(--text-secondary);">Morph matching elements smoothly from previous slide.</div>
+        </div>
+        <input type="checkbox" class="toggle-switch" id="modalAutoAnimateCheck" />
+      </div>
+
+      <label style="font-size:12px; font-weight:700; color:var(--text-secondary); display:block; margin:12px 0 6px;">Slide Transition</label>
+      <div class="pill-chips" id="modalTransitionChips">
+        <button class="chip-btn" data-tr="slide">Slide</button>
+        <button class="chip-btn" data-tr="fade">Fade</button>
+        <button class="chip-btn" data-tr="convex">Convex</button>
+        <button class="chip-btn" data-tr="concave">Concave</button>
+        <button class="chip-btn" data-tr="zoom">Zoom</button>
+        <button class="chip-btn" data-tr="none">None</button>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-gradient" onclick="closeModal('transitionsModal')">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Modal -->
+  <div class="modal-backdrop hidden" id="exportModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Export Presentation</h3>
+        <button class="drawer-close" onclick="closeModal('exportModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button class="text-preset-btn" id="btnExportPng" style="display:flex; align-items:center; gap:12px; margin-bottom:0;">
+          <div class="brand-mark" style="width:40px; height:40px; flex-shrink:0;"><i class="fa-regular fa-image"></i></div>
+          <div>
+            <div style="font-weight:700; font-size:14.5px;">Download Current Slide (PNG)</div>
+            <div style="font-size:12px; color:var(--text-secondary);">High-resolution 1920 × 1080 image</div>
+          </div>
+        </button>
+
+        <button class="text-preset-btn" id="btnExportRevealHtml" style="display:flex; align-items:center; gap:12px; margin-bottom:0;">
+          <div class="brand-mark" style="width:40px; height:40px; flex-shrink:0;"><i class="fa-solid fa-code"></i></div>
+          <div>
+            <div style="font-weight:700; font-size:14.5px;">Download Reveal.js Presentation (.html)</div>
+            <div style="font-size:12px; color:var(--text-secondary);">Standalone interactive slideshow with Auto-Animate & Charts</div>
+          </div>
+        </button>
+
+        <button class="text-preset-btn" id="btnExportJson" style="display:flex; align-items:center; gap:12px; margin-bottom:0;">
+          <div class="brand-mark" style="width:40px; height:40px; flex-shrink:0;"><i class="fa-regular fa-file-code"></i></div>
+          <div>
+            <div style="font-weight:700; font-size:14.5px;">Export Project Backup (.json)</div>
+            <div style="font-size:12px; color:var(--text-secondary);">Save editable project file</div>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card '...' Dynamic Context Menu -->
+  <div class="context-menu hidden" id="cardContextMenu"></div>
+
+  <!-- Editor '...' More Menu -->
+  <div class="context-menu hidden" id="editorMoreMenu"></div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer"></div>
+
+  <script>
+    /* ============================================================
+       CONSTANTS & ECOSYSTEM REGISTRIES
+    ============================================================ */
+    const LOGICAL_W = 960;
+    const LOGICAL_H = 540;
+    const FABRIC_PROPS = ['customId', 'objectType', 'chartConfig', 'svgRaw', 'svgColor', 'fontLoaded'];
+
+    const CHART_PALETTES = {
+      ocean: ['#00c4cc', '#3b82f6', '#6366f1', '#7d2ae8', '#a855f7', '#06b6d4'],
+      sunset: ['#7d2ae8', '#ec4899', '#f97316', '#eab308', '#6366f1', '#f43f5e'],
+      emerald: ['#00c4cc', '#10b981', '#0ea5e9', '#14b8a6', '#3b82f6', '#22c55e'],
+      corporate: ['#1e293b', '#3b82f6', '#64748b', '#7d2ae8', '#94a3b8', '#0f172a']
+    };
+
+    const GOOGLE_FONTS = [
+      'Plus Jakarta Sans', 'Inter', 'Poppins', 'Montserrat', 'Roboto', 'Open Sans',
+      'Lato', 'Outfit', 'DM Sans', 'Space Grotesk', 'Raleway', 'Nunito', 'Ubuntu',
+      'Playfair Display', 'Merriweather', 'Lora', 'PT Serif', 'Libre Baskerville',
+      'Bebas Neue', 'Anton', 'Oswald', 'Syne', 'Righteous', 'Archivo Black',
+      'Pacifico', 'Dancing Script', 'Caveat', 'Permanent Marker', 'Satisfy',
+      'JetBrains Mono', 'Fira Code', 'Space Mono'
+    ];
+
+    const loadedGoogleFonts = new Set(['Plus Jakarta Sans', 'Inter']);
+
+    const ICONIFY_HOSTS = [
+      'https://api.iconify.design',
+      'https://api.simplesvg.com',
+      'https://api.unisvg.com'
+    ];
+    const iconSvgCache = new Map();
+    let iconSearchSeq = 0;
+
+    const OFFLINE_FALLBACK_ICONS = {
+      rocket: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.13 22.19L11.5 18.36C13.07 17.78 14.54 17 15.9 16.09L13.13 22.19M5.64 12.5L1.81 10.87L7.91 8.1C7 9.46 6.22 10.93 5.64 12.5M21.61 2.39C21.61 2.39 16.66 .269 11 5.93C8.81 8.12 7.5 10.53 6.65 12.64C6.37 13.39 6.56 14.21 7.11 14.77L9.24 16.89C9.79 17.45 10.61 17.63 11.36 17.35C13.5 16.53 15.88 15.19 18.07 13C23.73 7.34 21.61 2.39 21.61 2.39M14.54 9.46C13.76 8.68 13.76 7.41 14.54 6.63S16.59 5.85 17.37 6.63C18.14 7.41 18.15 8.68 17.37 9.46C16.59 10.24 15.32 10.24 14.54 9.46Z"/></svg>',
+      star: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>',
+      heart: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z"/></svg>',
+      bolt: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 21H10L11 14H7.5C6.92 14 6.67 13.68 6.86 13.17L12.5 2H13.5L12.5 9H16.5C17.07 9 17.32 9.33 17.13 9.84L11 21Z"/></svg>',
+      chart: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z"/></svg>',
+      bulb: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2A7 7 0 0 0 5 9C5 11.38 6.19 13.47 8 14.74V17A1 1 0 0 0 9 18H15A1 1 0 0 0 16 17V14.74C17.81 13.47 19 11.38 19 9A7 7 0 0 0 12 2M9 21A1 1 0 0 0 10 22H14A1 1 0 0 0 15 21V20H9V21Z"/></svg>',
+      check: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z"/></svg>',
+      globe: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2A10 10 0 1 0 22 12A10 10 0 0 0 12 2M11 19.93C7.05 19.44 4 16.08 4 12C4 11.38 4.08 10.79 4.21 10.21L9 15V16A2 2 0 0 0 11 18M17.9 17.39A2 2 0 0 0 16 16H15V13A1 1 0 0 0 14 12H8V10H10A1 1 0 0 0 11 9V7H13A2 2 0 0 0 15 5V4.59A8 8 0 0 1 17.9 17.39Z"/></svg>',
+      users: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 17V19H2V17S2 13 9 13 16 17 16 17M12.5 7.5A3.5 3.5 0 1 0 9 11A3.5 3.5 0 0 0 12.5 7.5M15.94 13A5.32 5.32 0 0 1 18 17V19H22V17S22 13.37 15.94 13M15 4A3.39 3.39 0 0 0 13.07 4.59A5 5 0 0 1 13.07 10.41A3.39 3.39 0 0 0 15 11A3.5 3.5 0 0 0 15 4Z"/></svg>',
+      target: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2A10 10 0 1 0 22 12A10 10 0 0 0 12 2M12 20A8 8 0 1 1 20 12A8 8 0 0 1 12 20M12 6A6 6 0 1 0 18 12A6 6 0 0 0 12 6M12 16A4 4 0 1 1 16 12A4 4 0 0 1 12 16M12 10A2 2 0 1 0 14 12A2 2 0 0 0 12 10Z"/></svg>',
+      award: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 4A5 5 0 0 0 7 4A5 5 0 0 0 17 4M12 11A3 3 0 1 1 15 8A3 3 0 0 1 12 11M16 13.8V22L12 19.5L8 22V13.8A6.89 6.89 0 0 0 12 15A6.89 6.89 0 0 0 16 13.8Z"/></svg>',
+      sparkle: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9L20.25 6.25L23 5L20.25 3.75L19 1L17.75 3.75L15 5L17.75 6.25L19 9M11.5 9.5L9 4L6.5 9.5L1 12L6.5 14.5L9 20L11.5 14.5L17 12L11.5 9.5M19 15L17.75 17.75L15 19L17.75 20.25L19 23L20.25 20.25L23 19L20.25 17.75L19 15Z"/></svg>'
+    };
+
+    const SLIDE_BG_PRESETS = [
+      { type: 'solid', color: '#ffffff', css: '#ffffff' },
+      { type: 'solid', color: '#f8fafc', css: '#f8fafc' },
+      { type: 'solid', color: '#eef2ff', css: '#eef2ff' },
+      { type: 'solid', color: '#0f172a', css: '#0f172a' },
+      { type: 'solid', color: '#1e1b4b', css: '#1e1b4b' },
+      { type: 'gradient', angle: 135, stops: ['#00c4cc', '#7d2ae8'], css: 'linear-gradient(135deg, #00c4cc, #7d2ae8)' },
+      { type: 'gradient', angle: 135, stops: ['#2563eb', '#7d2ae8'], css: 'linear-gradient(135deg, #2563eb, #7d2ae8)' },
+      { type: 'gradient', angle: 135, stops: ['#e0f7fa', '#f3e8ff'], css: 'linear-gradient(135deg, #e0f7fa, #f3e8ff)' },
+      { type: 'gradient', angle: 135, stops: ['#0f172a', '#4c1d95'], css: 'linear-gradient(135deg, #0f172a, #4c1d95)' },
+      { type: 'gradient', angle: 135, stops: ['#3b82f6', '#ec4899'], css: 'linear-gradient(135deg, #3b82f6, #ec4899)' }
+    ];
+
+    /* ============================================================
+       STATE & PERSISTENCE (IndexedDB + localStorage fallback)
+    ============================================================ */
+    let designs = [];
+    let currentDesignId = null;
+    let currentSlideIdx = 0;
+    let fabricCanvas = null;
+    let canvasScale = 1;
+    let userZoomMultiplier = 1;
+    let isRestoring = false;
+    let pageSelected = false;
+    let activeToolTab = null;
+    let saveTimer = null;
+    let editingChartObject = null;
+    let iconResultsCache = [];
+    let currentIconQuery = 'business';
+    let fontSearchFilter = '';
+
+    // Dashboard controls
+    let sortAscending = false;
+    let listViewMode = false;
+    let pendingTargetDesignId = null;
+
+    // Undo / Redo per slide
+    const slideHistory = new Map(); // slideId -> { undo: [], redo: [] }
+
+    const DB_NAME = 'SlidesAppDB';
+    const STORE_NAME = 'presentations';
+
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) return reject('No IndexedDB');
+        const req = indexedDB.open(DB_NAME, 1);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function loadDesignsFromStorage() {
+      try {
+        const db = await openDB();
+        return await new Promise((resolve, reject) => {
+          const tx = db.transaction(STORE_NAME, 'readonly');
+          const store = tx.objectStore(STORE_NAME);
+          const req = store.getAll();
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => reject(req.error);
+        });
+      } catch (e) {
+        try {
+          const raw = localStorage.getItem('slides_designs_v1');
+          return raw ? JSON.parse(raw) : [];
+        } catch {
+          return [];
+        }
+      }
+    }
+
+    async function persistAllDesigns() {
+      try {
+        const db = await openDB();
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        store.clear();
+        designs.forEach(d => store.put(d));
+      } catch (e) {
+        try {
+          localStorage.setItem('slides_designs_v1', JSON.stringify(designs));
+        } catch (err) {
+          showToast('Storage almost full — consider exporting backup');
+        }
+      }
+    }
+
+    async function persistDesign(design) {
+      try {
+        const db = await openDB();
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).put(design);
+      } catch (e) {
+        persistAllDesigns();
+      }
+    }
+
+    async function removeDesignFromStorage(id) {
+      try {
+        const db = await openDB();
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).delete(id);
+      } catch (e) {
+        persistAllDesigns();
+      }
+    }
+
+    /* ============================================================
+       UTILITIES
+    ============================================================ */
+    function uid(prefix = 'id') {
+      return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    function showToast(msg) {
+      const container = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      el.className = 'toast';
+      el.textContent = msg;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transition = 'opacity 0.2s';
+        setTimeout(() => el.remove(), 220);
+      }, 2400);
+    }
+
+    function timeAgo(ts) {
+      const diff = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+      if (diff < 45) return 'Edited just now';
+      const mins = Math.floor(diff / 60);
+      if (mins < 60) return `Edited ${mins} minute${mins === 1 ? '' : 's'} ago`;
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return `Edited ${hrs} hour${hrs === 1 ? '' : 's'} ago`;
+      const days = Math.floor(hrs / 24);
+      return `Edited ${days} day${days === 1 ? '' : 's'} ago`;
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function createBlankSlide() {
+      return {
+        id: uid('slide'),
+        fabricJson: { version: '5.3.1', objects: [] },
+        background: { type: 'solid', color: '#ffffff', css: '#ffffff' },
+        transition: 'slide',
+        autoAnimate: false,
+        thumbnail: null
+      };
+    }
+
+    function getCurrentDesign() {
+      return designs.find(d => d.id === currentDesignId) || null;
+    }
+
+    function getCurrentSlide() {
+      const d = getCurrentDesign();
+      if (!d) return null;
+      return d.slides[currentSlideIdx] || d.slides[0];
+    }
+
+    async function loadGoogleFont(fontName) {
+      if (!fontName) return;
+      const cleanName = fontName.replace(/['"]/g, '').trim();
+      if (!loadedGoogleFonts.has(cleanName)) {
+        const familyParam = encodeURIComponent(cleanName).replace(/%20/g, '+');
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = `https://fonts.googleapis.com/css2?family=${familyParam}:ital,wght@0,400;0,600;0,700;0,800;1,400;1,700&display=swap`;
+        document.head.appendChild(link);
+        loadedGoogleFonts.add(cleanName);
+      }
+      try {
+        await Promise.race([
+          document.fonts.load(`16px "${cleanName}"`),
+          new Promise(res => setTimeout(res, 1200))
+        ]);
+      } catch {}
+    }
+
+    /* ============================================================
+       DASHBOARD RENDERING & ACTIONS
+    ============================================================ */
+    function renderDashboard() {
+      const grid = document.getElementById('designsGrid');
+      const emptyState = document.getElementById('dashEmptyState');
+      const countPill = document.getElementById('dashCountPill');
+
+      const search = document.getElementById('dashSearchInput').value.trim().toLowerCase();
+      const filterType = document.getElementById('filterType').value;
+      const sortBy = document.getElementById('sortBy').value;
+
+      let list = [...designs];
+      if (filterType === 'multi') list = list.filter(d => d.slides.length > 1);
+      if (filterType === 'single') list = list.filter(d => d.slides.length === 1);
+      if (search) list = list.filter(d => (d.title || '').toLowerCase().includes(search));
+
+      list.sort((a, b) => {
+        let cmp = 0;
+        if (sortBy === 'name') cmp = (a.title || '').localeCompare(b.title || '');
+        else if (sortBy === 'slides') cmp = a.slides.length - b.slides.length;
+        else cmp = a.updatedAt - b.updatedAt;
+        return sortAscending ? cmp : -cmp;
+      });
+
+      if (designs.length === 0) {
+        countPill.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        grid.innerHTML = '';
+        return;
+      }
+
+      countPill.textContent = `${designs.length}`;
+      countPill.classList.remove('hidden');
+      emptyState.classList.add('hidden');
+
+      if (list.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column:1/-1; text-align:center; padding:42px 16px; color:var(--text-secondary);">
+            No matching presentations found.
+          </div>`;
+        return;
+      }
+
+      grid.classList.toggle('list-view', listViewMode);
+      grid.innerHTML = '';
+
+      list.forEach(design => {
+        const firstThumb = design.slides[0]?.thumbnail;
+        const card = document.createElement('div');
+        card.className = 'design-card';
+
+        const thumbHtml = firstThumb
+          ? `<img src="${firstThumb}" alt="${escapeHtml(design.title)}" />`
+          : `<div style="width:100%; height:100%; background:${design.slides[0]?.background?.css || '#ffffff'};"></div>`;
+
+        card.innerHTML = `
+          <div class="design-thumb-box">
+            <div class="design-thumb-inner">${thumbHtml}</div>
+            <button class="card-dots-btn" title="More options" aria-label="More options">
+              <i class="fa-solid fa-ellipsis"></i>
+            </button>
+          </div>
+          <div class="design-info">
+            <div class="design-name">${escapeHtml(design.title || 'Untitled Design')}</div>
+            <div class="design-meta">
+              <span class="design-badge-icon"><i class="fa-solid fa-pen"></i></span>
+              <span>• ${timeAgo(design.updatedAt)} • ${design.slides.length} slide${design.slides.length > 1 ? 's' : ''}</span>
+            </div>
+          </div>
+        `;
+
+        card.addEventListener('click', (e) => {
+          if (e.target.closest('.card-dots-btn')) return;
+          openDesignInEditor(design.id);
+        });
+
+        card.querySelector('.card-dots-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          showCardContextMenu(design.id, e.currentTarget);
+        });
+
+        grid.appendChild(card);
+      });
+    }
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/[&<>"']/g, s => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[s]));
+    }
+
+    function createNewDesign() {
+      const blankSlide = createBlankSlide();
+      const newDesign = {
+        id: uid('deck'),
+        title: 'Untitled Design',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        slides: [blankSlide]
+      };
+      designs.unshift(newDesign);
+      persistDesign(newDesign);
+      openDesignInEditor(newDesign.id);
+    }
+
+    function showCardContextMenu(designId, anchorEl) {
+      const menu = document.getElementById('cardContextMenu');
+      pendingTargetDesignId = designId;
+
+      menu.innerHTML = `
+        <button class="context-menu-item" data-action="open">
+          <i class="fa-regular fa-pen-to-square"></i> Edit Presentation
+        </button>
+        <button class="context-menu-item" data-action="rename">
+          <i class="fa-solid fa-i-cursor"></i> Rename
+        </button>
+        <button class="context-menu-item" data-action="duplicate">
+          <i class="fa-regular fa-copy"></i> Duplicate
+        </button>
+        <button class="context-menu-item" data-action="present">
+          <i class="fa-solid fa-play"></i> Present
+        </button>
+        <button class="context-menu-item danger" data-action="delete">
+          <i class="fa-regular fa-trash-can"></i> Delete
+        </button>
+      `;
+
+      const rect = anchorEl.getBoundingClientRect();
+      menu.classList.remove('hidden');
+
+      const menuW = 196;
+      const menuH = menu.offsetHeight || 200;
+      let left = rect.right - menuW;
+      let top = rect.bottom + 6;
+      if (left < 10) left = 10;
+      if (top + menuH > window.innerHeight - 10) top = rect.top - menuH - 6;
+
+      menu.style.left = `${left}px`;
+      menu.style.top = `${top}px`;
+
+      menu.querySelectorAll('.context-menu-item').forEach(btn => {
+        btn.onclick = () => {
+          menu.classList.add('hidden');
+          const act = btn.dataset.action;
+          const design = designs.find(d => d.id === pendingTargetDesignId);
+          if (!design) return;
+
+          if (act === 'open') openDesignInEditor(design.id);
+          else if (act === 'rename') promptRenameDesign(design.id);
+          else if (act === 'duplicate') duplicateDesign(design.id);
+          else if (act === 'present') launchRevealPresenter(design);
+          else if (act === 'delete') promptDeleteDesign(design.id);
+        };
+      });
+    }
+
+    function promptRenameDesign(id) {
+      const d = designs.find(x => x.id === id);
+      if (!d) return;
+      pendingTargetDesignId = id;
+      const input = document.getElementById('renameInput');
+      input.value = d.title || 'Untitled Design';
+      openModal('renameModal');
+      setTimeout(() => { input.focus(); input.select(); }, 50);
+    }
+
+    function promptDeleteDesign(id) {
+      const d = designs.find(x => x.id === id);
+      if (!d) return;
+      pendingTargetDesignId = id;
+      document.getElementById('deleteTargetName').textContent = `"${d.title || 'Untitled Design'}"`;
+      openModal('deleteModal');
+    }
+
+    function duplicateDesign(id) {
+      const src = designs.find(x => x.id === id);
+      if (!src) return;
+      const copy = JSON.parse(JSON.stringify(src));
+      copy.id = uid('deck');
+      copy.title = `${src.title || 'Untitled Design'} (Copy)`;
+      copy.createdAt = Date.now();
+      copy.updatedAt = Date.now();
+      copy.slides.forEach(s => { s.id = uid('slide'); });
+      designs.unshift(copy);
+      persistDesign(copy);
+      renderDashboard();
+      showToast('Presentation duplicated');
+    }
+
+    /* ============================================================
+       FABRIC.JS CANVAS ENGINE & WORKSPACE
+    ============================================================ */
+    function initFabricCanvas() {
+      if (fabricCanvas) return;
+
+      fabricCanvas = new fabric.Canvas('slideCanvas', {
+        width: LOGICAL_W,
+        height: LOGICAL_H,
+        backgroundColor: '#ffffff',
+        preserveObjectStacking: true,
+        selectionColor: 'rgba(125, 42, 232, 0.12)',
+        selectionBorderColor: '#7d2ae8',
+        selectionLineWidth: 1.5
+      });
+
+      // Global Canva-like selection handle styling
+      fabric.Object.prototype.set({
+        transparentCorners: false,
+        cornerColor: '#ffffff',
+        cornerStrokeColor: '#7d2ae8',
+        borderColor: '#7d2ae8',
+        cornerSize: 10,
+        cornerStyle: 'circle',
+        padding: 4,
+        borderScaleFactor: 1.5
+      });
+
+      // Snap-to-center guidelines
+      let vGuide = null;
+      let hGuide = null;
+
+      function clearGuides() {
+        if (vGuide) { fabricCanvas.remove(vGuide); vGuide = null; }
+        if (hGuide) { fabricCanvas.remove(hGuide); hGuide = null; }
+      }
+
+      fabricCanvas.on('object:moving', (e) => {
+        const obj = e.target;
+        const center = obj.getCenterPoint();
+        const snapThreshold = 8;
+
+        clearGuides();
+
+        if (Math.abs(center.x - LOGICAL_W / 2) < snapThreshold) {
+          obj.setPositionByOrigin(new fabric.Point(LOGICAL_W / 2, center.y), 'center', 'center');
+          vGuide = new fabric.Line([LOGICAL_W / 2, 0, LOGICAL_W / 2, LOGICAL_H], {
+            stroke: '#7d2ae8', strokeWidth: 1, strokeDashArray: [5, 4],
+            selectable: false, evented: false, excludeFromExport: true
+          });
+          fabricCanvas.add(vGuide);
+        }
+
+        const updatedCenter = obj.getCenterPoint();
+        if (Math.abs(updatedCenter.y - LOGICAL_H / 2) < snapThreshold) {
+          obj.setPositionByOrigin(new fabric.Point(updatedCenter.x, LOGICAL_H / 2), 'center', 'center');
+          hGuide = new fabric.Line([0, LOGICAL_H / 2, LOGICAL_W, LOGICAL_H / 2], {
+            stroke: '#7d2ae8', strokeWidth: 1, strokeDashArray: [5, 4],
+            selectable: false, evented: false, excludeFromExport: true
+          });
+          fabricCanvas.add(hGuide);
+        }
+      });
+
+      fabricCanvas.on('mouse:up', clearGuides);
+
+      // Selection Events (Object vs Empty Slide Page selection like Screenshot 2)
+      fabricCanvas.on('selection:created', () => {
+        pageSelected = false;
+        updateSelectionUI();
+      });
+
+      fabricCanvas.on('selection:updated', () => {
+        pageSelected = false;
+        updateSelectionUI();
+      });
+
+      fabricCanvas.on('selection:cleared', () => {
+        updateSelectionUI();
+      });
+
+      fabricCanvas.on('mouse:down', (opt) => {
+        if (!opt.target) {
+          pageSelected = true;
+          updateSelectionUI();
+        } else {
+          pageSelected = false;
+        }
+      });
+
+      // Double-click chart to edit Chart.js data
+      fabricCanvas.on('mouse:dblclick', (opt) => {
+        if (opt.target && opt.target.objectType === 'chart') {
+          openChartEditorModal(opt.target);
+        }
+      });
+
+      // History & Auto-save triggers
+      ['object:added', 'object:modified', 'object:removed'].forEach(evt => {
+        fabricCanvas.on(evt, (e) => {
+          if (isRestoring) return;
+          if (e.target && e.target.excludeFromExport) return;
+          pushHistorySnapshot();
+          scheduleSlideSave();
+          if (evt === 'object:modified') updateSelectionUI();
+        });
+      });
+
+      const ro = new ResizeObserver(() => applyCanvasScale());
+      ro.observe(document.getElementById('canvasStageArea'));
+    }
+
+    function applyCanvasScale() {
+      if (!fabricCanvas) return;
+      const stage = document.getElementById('canvasStageArea');
+      if (!stage || stage.clientWidth === 0) return;
+
+      const padW = window.innerWidth >= 900 ? 64 : 28;
+      const padH = window.innerWidth >= 900 ? 68 : 66;
+      const availW = Math.max(220, stage.clientWidth - padW);
+      const availH = Math.max(140, stage.clientHeight - padH);
+
+      const fitScale = Math.min(availW / LOGICAL_W, availH / LOGICAL_H);
+      canvasScale = Math.max(0.2, Math.min(2.2, fitScale * userZoomMultiplier));
+
+      fabricCanvas.setZoom(canvasScale);
+      fabricCanvas.setDimensions({
+        width: Math.round(LOGICAL_W * canvasScale),
+        height: Math.round(LOGICAL_H * canvasScale)
+      });
+      fabricCanvas.calcOffset();
+      fabricCanvas.requestRenderAll();
+    }
+
+    function applySlideBackgroundToFabric(bg) {
+      if (!fabricCanvas) return;
+      if (!bg || bg.type === 'solid') {
+        fabricCanvas.setBackgroundColor(bg?.color || '#ffffff', fabricCanvas.renderAll.bind(fabricCanvas));
+      } else if (bg.type === 'gradient') {
+        const angleRad = ((bg.angle || 135) * Math.PI) / 180;
+        const x1 = 0.5 - 0.5 * Math.cos(angleRad);
+        const y1 = 0.5 - 0.5 * Math.sin(angleRad);
+        const x2 = 0.5 + 0.5 * Math.cos(angleRad);
+        const y2 = 0.5 + 0.5 * Math.sin(angleRad);
+        const grad = new fabric.Gradient({
+          type: 'linear',
+          gradientUnits: 'percentage',
+          coords: { x1, y1, x2, y2 },
+          colorStops: [
+            { offset: 0, color: bg.stops[0] },
+            { offset: 1, color: bg.stops[1] }
+          ]
+        });
+        fabricCanvas.setBackgroundColor(grad, fabricCanvas.renderAll.bind(fabricCanvas));
+      }
+    }
+
+    async function openDesignInEditor(designId) {
+      currentDesignId = designId;
+      currentSlideIdx = 0;
+      pageSelected = false;
+      userZoomMultiplier = 1;
+      document.getElementById('zoomLabel').textContent = 'Fit';
+
+      const design = getCurrentDesign();
+      if (!design) return;
+
+      document.getElementById('dashboardView').classList.add('hidden');
+      document.getElementById('editorView').classList.remove('hidden');
+      document.getElementById('editorTitleInput').value = design.title || 'Untitled Design';
+
+      initFabricCanvas();
+
+      // Preload Google fonts referenced in slides
+      const fontsToLoad = new Set();
+      design.slides.forEach(sl => {
+        (sl.fabricJson?.objects || []).forEach(o => {
+          if (o.fontFamily) fontsToLoad.add(o.fontFamily);
+        });
+      });
+      await Promise.all([...fontsToLoad].map(loadGoogleFont));
+
+      await loadSlideIntoCanvas(0);
+      applyCanvasScale();
+      renderSlideStrip();
+      updateSelectionUI();
+
+      closeToolDrawer();
+    }
+
+    async function loadSlideIntoCanvas(index) {
+      const design = getCurrentDesign();
+      if (!design) return;
+      currentSlideIdx = Math.max(0, Math.min(index, design.slides.length - 1));
+      const slide = design.slides[currentSlideIdx];
+      pageSelected = false;
+
+      isRestoring = true;
+      fabricCanvas.discardActiveObject();
+      fabricCanvas.clear();
+
+      await new Promise(resolve => {
+        fabricCanvas.loadFromJSON(slide.fabricJson || { objects: [] }, () => {
+          applySlideBackgroundToFabric(slide.background);
+          fabricCanvas.renderAll();
+          resolve();
+        });
+      });
+
+      isRestoring = false;
+
+      // Initialize history for slide if absent
+      if (!slideHistory.has(slide.id)) {
+        slideHistory.set(slide.id, {
+          undo: [serializeFabricState()],
+          redo: []
+        });
+      }
+      updateUndoRedoButtons();
+      renderSlideStrip();
+      updateSelectionUI();
+    }
+
+    function serializeFabricState() {
+      const cleanObjects = fabricCanvas.toJSON(FABRIC_PROPS);
+      if (cleanObjects.objects) {
+        cleanObjects.objects = cleanObjects.objects.filter(o => !o.excludeFromExport);
+      }
+      return JSON.stringify(cleanObjects);
+    }
+
+    function pushHistorySnapshot() {
+      const slide = getCurrentSlide();
+      if (!slide) return;
+      if (!slideHistory.has(slide.id)) slideHistory.set(slide.id, { undo: [], redo: [] });
+      const hist = slideHistory.get(slide.id);
+      const snap = serializeFabricState();
+      if (hist.undo[hist.undo.length - 1] !== snap) {
+        hist.undo.push(snap);
+        if (hist.undo.length > 35) hist.undo.shift();
+        hist.redo = [];
+      }
+      updateUndoRedoButtons();
+    }
+
+    function updateUndoRedoButtons() {
+      const slide = getCurrentSlide();
+      const hist = slide ? slideHistory.get(slide.id) : null;
+      document.getElementById('btnUndo').disabled = !(hist && hist.undo.length > 1);
+      document.getElementById('btnRedo').disabled = !(hist && hist.redo.length > 0);
+    }
+
+    function performUndo() {
+      const slide = getCurrentSlide();
+      if (!slide) return;
+      const hist = slideHistory.get(slide.id);
+      if (!hist || hist.undo.length <= 1) return;
+
+      const current = hist.undo.pop();
+      hist.redo.push(current);
+      restoreSnapshot(hist.undo[hist.undo.length - 1]);
+    }
+
+    function performRedo() {
+      const slide = getCurrentSlide();
+      if (!slide) return;
+      const hist = slideHistory.get(slide.id);
+      if (!hist || hist.redo.length === 0) return;
+
+      const next = hist.redo.pop();
+      hist.undo.push(next);
+      restoreSnapshot(next);
+    }
+
+    function restoreSnapshot(jsonStr) {
+      const slide = getCurrentSlide();
+      if (!slide) return;
+      isRestoring = true;
+      const parsed = JSON.parse(jsonStr);
+      fabricCanvas.loadFromJSON(parsed, () => {
+        applySlideBackgroundToFabric(slide.background);
+        fabricCanvas.renderAll();
+        isRestoring = false;
+        updateUndoRedoButtons();
+        updateSelectionUI();
+        scheduleSlideSave();
+      });
+    }
+
+    function captureCurrentSlideThumbnail() {
+      if (!fabricCanvas) return null;
+      const prevZoom = fabricCanvas.getZoom();
+      const prevW = fabricCanvas.getWidth();
+      const prevH = fabricCanvas.getHeight();
+
+      const thumbScale = 320 / LOGICAL_W;
+      fabricCanvas.setZoom(thumbScale);
+      fabricCanvas.setDimensions({ width: 320, height: 180 });
+      const dataUrl = fabricCanvas.toDataURL({ format: 'png', quality: 0.85 });
+
+      fabricCanvas.setZoom(prevZoom);
+      fabricCanvas.setDimensions({ width: prevW, height: prevH });
+      fabricCanvas.requestRenderAll();
+      return dataUrl;
+    }
+
+    function saveCurrentSlideImmediate() {
+      const design = getCurrentDesign();
+      const slide = getCurrentSlide();
+      if (!design || !slide || !fabricCanvas) return;
+
+      const objJson = JSON.parse(serializeFabricState());
+      delete objJson.background;
+      slide.fabricJson = objJson;
+      slide.thumbnail = captureCurrentSlideThumbnail();
+      design.updatedAt = Date.now();
+
+      persistDesign(design);
+      renderSlideStrip();
+      document.getElementById('saveStatusText').textContent = 'Saved';
+    }
+
+    function scheduleSlideSave() {
+      document.getElementById('saveStatusText').textContent = 'Saving...';
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveCurrentSlideImmediate, 320);
+    }
+
+    /* ============================================================
+       SLIDE MANAGEMENT (Add, Duplicate, Switch, Delete)
+    ============================================================ */
+    function renderSlideStrip() {
+      const design = getCurrentDesign();
+      const container = document.getElementById('slideThumbnails');
+      if (!design || !container) return;
+
+      container.innerHTML = '';
+      design.slides.forEach((slide, idx) => {
+        const card = document.createElement('div');
+        card.className = `slide-mini-card ${idx === currentSlideIdx ? 'active' : ''}`;
+        card.title = `Slide ${idx + 1}`;
+        const thumbContent = slide.thumbnail
+          ? `<img src="${slide.thumbnail}" alt="Slide ${idx + 1}" />`
+          : `<div style="width:100%;height:100%;background:${slide.background?.css || '#ffffff'};"></div>`;
+
+        card.innerHTML = `
+          ${thumbContent}
+          <span class="slide-mini-num">${idx + 1}</span>
+          ${slide.autoAnimate ? `<span class="slide-mini-magic" title="Auto-Animate enabled"><i class="fa-solid fa-wand-magic-sparkles"></i></span>` : ''}
+        `;
+
+        card.onclick = async () => {
+          if (idx === currentSlideIdx) return;
+          saveCurrentSlideImmediate();
+          await loadSlideIntoCanvas(idx);
+        };
+        container.appendChild(card);
+      });
+    }
+
+    async function addNewBlankSlide() {
+      const design = getCurrentDesign();
+      if (!design) return;
+      saveCurrentSlideImmediate();
+      const blank = createBlankSlide();
+      design.slides.splice(currentSlideIdx + 1, 0, blank);
+      design.updatedAt = Date.now();
+      await loadSlideIntoCanvas(currentSlideIdx + 1);
+      saveCurrentSlideImmediate();
+      showToast(`Added Slide ${currentSlideIdx + 1}`);
+    }
+
+    async function duplicateCurrentSlide() {
+      const design = getCurrentDesign();
+      const slide = getCurrentSlide();
+      if (!design || !slide) return;
+      saveCurrentSlideImmediate();
+
+      const clone = JSON.parse(JSON.stringify(slide));
+      clone.id = uid('slide');
+      design.slides.splice(currentSlideIdx + 1, 0, clone);
+      design.updatedAt = Date.now();
+      await loadSlideIntoCanvas(currentSlideIdx + 1);
+      saveCurrentSlideImmediate();
+      showToast('Slide duplicated (Auto-Animate IDs preserved)');
+    }
+
+    async function deleteCurrentSlide() {
+      const design = getCurrentDesign();
+      if (!design) return;
+      if (design.slides.length <= 1) {
+        fabricCanvas.clear();
+        const slide = getCurrentSlide();
+        slide.background = { type: 'solid', color: '#ffffff', css: '#ffffff' };
+        applySlideBackgroundToFabric(slide.background);
+        pushHistorySnapshot();
+        saveCurrentSlideImmediate();
+        showToast('Cleared slide canvas');
+        return;
+      }
+      design.slides.splice(currentSlideIdx, 1);
+      const nextIdx = Math.max(0, currentSlideIdx - 1);
+      await loadSlideIntoCanvas(nextIdx);
+      saveCurrentSlideImmediate();
+      showToast('Slide deleted');
+    }
+
+    /* ============================================================
+       CONTEXTUAL TOOLBARS (Desktop Top Bar, Mobile Bottom Bar, Floating Pill)
+    ============================================================ */
+    function updateSelectionUI() {
+      if (!fabricCanvas) return;
+      const active = fabricCanvas.getActiveObject();
+      const canvasFrame = document.getElementById('canvasFrame');
+      const floatingPill = document.getElementById('floatingPill');
+
+      canvasFrame.classList.toggle('page-selected', !active && pageSelected);
+
+      if (active) {
+        floatingPill.classList.remove('hidden');
+        const isChart = active.objectType === 'chart';
+        floatingPill.innerHTML = `
+          ${isChart ? `<button title="Edit Chart Data" onclick="openChartEditorModal(fabricCanvas.getActiveObject())"><i class="fa-solid fa-sliders"></i></button>` : ''}
+          <button title="Duplicate (Ctrl+D)" onclick="duplicateSelectedObject()"><i class="fa-regular fa-copy"></i></button>
+          <button title="Bring Forward" onclick="bringSelectedForward()"><i class="fa-solid fa-layer-group"></i></button>
+          <button class="danger" title="Delete (Del)" onclick="deleteSelectedObject()"><i class="fa-regular fa-trash-can"></i></button>
+        `;
+      } else if (pageSelected) {
+        floatingPill.classList.remove('hidden');
+        floatingPill.innerHTML = `
+          <button title="Duplicate Slide" onclick="duplicateCurrentSlide()"><i class="fa-regular fa-copy"></i></button>
+          <button title="Slide Animation" onclick="openTransitionsModal()"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
+          <button class="danger" title="Delete Slide" onclick="deleteCurrentSlide()"><i class="fa-regular fa-trash-can"></i></button>
+        `;
+      } else {
+        floatingPill.classList.add('hidden');
+      }
+
+      renderDesktopPropBar(active);
+      renderMobileBottomBar(active);
+    }
+
+    function renderDesktopPropBar(active) {
+      const bar = document.getElementById('desktopPropBar');
+      const slide = getCurrentSlide();
+      if (!bar || !slide) return;
+
+      if (!active) {
+        bar.innerHTML = `
+          <button class="prop-btn" onclick="openToolDrawer('page')">
+            <span class="color-swatch-btn" style="background:${slide.background?.css || '#fff'}; width:20px; height:20px;"></span>
+            <span>Background</span>
+          </button>
+          <div class="prop-divider"></div>
+          <button class="prop-btn" onclick="openTransitionsModal()">
+            <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--purple);"></i>
+            <span>Transition: ${capitalize(slide.transition || 'slide')}${slide.autoAnimate ? ' + Auto-Animate' : ''}</span>
+          </button>
+          <div class="prop-divider"></div>
+          <button class="prop-btn" onclick="duplicateCurrentSlide()">
+            <i class="fa-regular fa-copy"></i> <span>Duplicate Slide</span>
+          </button>
+          <button class="prop-btn" onclick="openToolDrawer('templates')">
+            <i class="fa-solid fa-table-columns"></i> <span>Templates</span>
+          </button>
+          <span style="margin-left:auto; font-size:12px; color:var(--text-secondary);">
+            16:9 Slide (${LOGICAL_W}×${LOGICAL_H})
+          </span>
+        `;
+        return;
+      }
+
+      const opacityPct = Math.round((active.opacity ?? 1) * 100);
+
+      if (active.type === 'textbox' || active.type === 'i-text') {
+        const currentFont = (active.fontFamily || 'Plus Jakarta Sans').replace(/['"]/g, '');
+        const fontOptions = [...new Set([currentFont, ...GOOGLE_FONTS])].map(f =>
+          `<option value="${escapeHtml(f)}" ${f === currentFont ? 'selected' : ''}>${escapeHtml(f)}</option>`
+        ).join('');
+
+        bar.innerHTML = `
+          <select class="prop-select" onchange="changeSelectedTextFont(this.value)" title="Google Font">${fontOptions}</select>
+          <input type="number" class="prop-num" min="8" max="200" value="${Math.round(active.fontSize || 32)}" onchange="setSelectedProp('fontSize', Math.max(8, +this.value))" title="Font Size" />
+          <label class="color-swatch-btn" title="Text Color" style="background:${active.fill || '#111827'}">
+            <input type="color" value="${toHex(active.fill || '#111827')}" oninput="setSelectedProp('fill', this.value)" />
+          </label>
+          <div class="prop-divider"></div>
+          <button class="prop-btn ${active.fontWeight === 'bold' || active.fontWeight >= 700 ? 'active' : ''}" onclick="toggleBoldText()" title="Bold"><i class="fa-solid fa-bold"></i></button>
+          <button class="prop-btn ${active.fontStyle === 'italic' ? 'active' : ''}" onclick="toggleItalicText()" title="Italic"><i class="fa-solid fa-italic"></i></button>
+          <button class="prop-btn ${active.underline ? 'active' : ''}" onclick="toggleUnderlineText()" title="Underline"><i class="fa-solid fa-underline"></i></button>
+          <button class="prop-btn" onclick="cycleTextAlign()" title="Align"><i class="fa-solid fa-align-${active.textAlign || 'left'}"></i></button>
+          <div class="prop-divider"></div>
+          <span style="font-size:12px; color:var(--text-secondary);">Opacity</span>
+          <input type="range" min="10" max="100" value="${opacityPct}" style="width:76px; accent-color:var(--purple);" oninput="setSelectedProp('opacity', this.value/100)" />
+          <div style="margin-left:auto; display:flex; gap:4px;">
+            <button class="prop-btn" onclick="duplicateSelectedObject()"><i class="fa-regular fa-copy"></i></button>
+            <button class="prop-btn" style="color:var(--danger);" onclick="deleteSelectedObject()"><i class="fa-regular fa-trash-can"></i></button>
+          </div>
+        `;
+      } else if (active.objectType === 'chart') {
+        bar.innerHTML = `
+          <button class="prop-btn active" onclick="openChartEditorModal(fabricCanvas.getActiveObject())">
+            <i class="fa-solid fa-chart-column"></i> <span>Edit Chart Data</span>
+          </button>
+          <div class="prop-divider"></div>
+          <span style="font-size:12px; color:var(--text-secondary);">Opacity</span>
+          <input type="range" min="10" max="100" value="${opacityPct}" style="width:86px; accent-color:var(--purple);" oninput="setSelectedProp('opacity', this.value/100)" />
+          <div class="prop-divider"></div>
+          <button class="prop-btn" onclick="bringSelectedForward()"><i class="fa-solid fa-arrow-up"></i> Forward</button>
+          <button class="prop-btn" onclick="sendSelectedBackward()"><i class="fa-solid fa-arrow-down"></i> Backward</button>
+          <div style="margin-left:auto; display:flex; gap:4px;">
+            <button class="prop-btn" onclick="duplicateSelectedObject()"><i class="fa-regular fa-copy"></i></button>
+            <button class="prop-btn" style="color:var(--danger);" onclick="deleteSelectedObject()"><i class="fa-regular fa-trash-can"></i></button>
+          </div>
+        `;
+      } else {
+        const curFill = getObjectColor(active);
+        bar.innerHTML = `
+          <span style="font-size:12px; font-weight:700; color:var(--text-secondary);">Color</span>
+          <label class="color-swatch-btn" style="background:${curFill}">
+            <input type="color" value="${toHex(curFill)}" oninput="recolorSelectedObject(this.value)" />
+          </label>
+          ${active.type !== 'group' && active.type !== 'image' ? `
+            <span style="font-size:12px; color:var(--text-secondary); margin-left:6px;">Stroke</span>
+            <label class="color-swatch-btn" style="background:${active.stroke || '#000000'}">
+              <input type="color" value="${toHex(active.stroke || '#000000')}" oninput="setSelectedProp('stroke', this.value)" />
+            </label>
+            <input type="number" class="prop-num" min="0" max="30" value="${active.strokeWidth || 0}" onchange="setSelectedProp('strokeWidth', +this.value)" title="Border Width" />
+          ` : ''}
+          <div class="prop-divider"></div>
+          <span style="font-size:12px; color:var(--text-secondary);">Opacity</span>
+          <input type="range" min="10" max="100" value="${opacityPct}" style="width:80px; accent-color:var(--purple);" oninput="setSelectedProp('opacity', this.value/100)" />
+          <div class="prop-divider"></div>
+          <button class="prop-btn" onclick="bringSelectedForward()"><i class="fa-solid fa-arrow-up"></i> Forward</button>
+          <button class="prop-btn" onclick="sendSelectedBackward()"><i class="fa-solid fa-arrow-down"></i> Backward</button>
+          <div style="margin-left:auto; display:flex; gap:4px;">
+            <button class="prop-btn" onclick="duplicateSelectedObject()"><i class="fa-regular fa-copy"></i></button>
+            <button class="prop-btn" style="color:var(--danger);" onclick="deleteSelectedObject()"><i class="fa-regular fa-trash-can"></i></button>
+          </div>
+        `;
+      }
+    }
+
+    function renderMobileBottomBar(active) {
+      const bar = document.getElementById('mobileBottomBar');
+      if (!bar) return;
+
+      if (active) {
+        if (active.type === 'textbox' || active.type === 'i-text') {
+          bar.innerHTML = `
+            <button class="mobile-tool-btn" onclick="openToolDrawer('text')"><i class="fa-solid fa-font"></i><span>Font</span></button>
+            <button class="mobile-tool-btn" onclick="toggleBoldText()"><i class="fa-solid fa-bold"></i><span>Bold</span></button>
+            <button class="mobile-tool-btn" onclick="cycleTextAlign()"><i class="fa-solid fa-align-center"></i><span>Align</span></button>
+            <label class="mobile-tool-btn" style="cursor:pointer;">
+              <i class="fa-solid fa-palette" style="color:${active.fill || '#111827'}"></i>
+              <span>Color</span>
+              <input type="color" style="position:absolute;opacity:0;width:1px;height:1px;" value="${toHex(active.fill || '#111827')}" oninput="setSelectedProp('fill', this.value)" />
+            </label>
+            <button class="mobile-tool-btn" onclick="deleteSelectedObject()" style="color:var(--danger)"><i class="fa-regular fa-trash-can"></i><span>Delete</span></button>
+            <button class="mobile-done-btn" onclick="deselectAll()" title="Done"><i class="fa-solid fa-check"></i></button>
+          `;
+        } else if (active.objectType === 'chart') {
+          bar.innerHTML = `
+            <button class="mobile-tool-btn" onclick="openChartEditorModal(fabricCanvas.getActiveObject())"><i class="fa-solid fa-sliders"></i><span>Edit Data</span></button>
+            <button class="mobile-tool-btn" onclick="duplicateSelectedObject()"><i class="fa-regular fa-copy"></i><span>Duplicate</span></button>
+            <button class="mobile-tool-btn" onclick="bringSelectedForward()"><i class="fa-solid fa-arrow-up"></i><span>Forward</span></button>
+            <button class="mobile-tool-btn" onclick="deleteSelectedObject()" style="color:var(--danger)"><i class="fa-regular fa-trash-can"></i><span>Delete</span></button>
+            <button class="mobile-done-btn" onclick="deselectAll()" title="Done"><i class="fa-solid fa-check"></i></button>
+          `;
+        } else {
+          const curFill = getObjectColor(active);
+          bar.innerHTML = `
+            <label class="mobile-tool-btn" style="cursor:pointer;">
+              <i class="fa-solid fa-fill-drip" style="color:${toHex(curFill)}"></i>
+              <span>Color</span>
+              <input type="color" style="position:absolute;opacity:0;width:1px;height:1px;" value="${toHex(curFill)}" oninput="recolorSelectedObject(this.value)" />
+            </label>
+            <button class="mobile-tool-btn" onclick="duplicateSelectedObject()"><i class="fa-regular fa-copy"></i><span>Duplicate</span></button>
+            <button class="mobile-tool-btn" onclick="bringSelectedForward()"><i class="fa-solid fa-arrow-up"></i><span>Forward</span></button>
+            <button class="mobile-tool-btn" onclick="deleteSelectedObject()" style="color:var(--danger)"><i class="fa-regular fa-trash-can"></i><span>Delete</span></button>
+            <button class="mobile-done-btn" onclick="deselectAll()" title="Done"><i class="fa-solid fa-check"></i></button>
+          `;
+        }
+        return;
+      }
+
+      if (pageSelected) {
+        bar.innerHTML = `
+          <button class="mobile-tool-btn" onclick="openToolDrawer('templates')"><i class="fa-solid fa-rotate"></i><span>Replace</span></button>
+          <button class="mobile-tool-btn" onclick="openTransitionsModal()"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Animate</span></button>
+          <button class="mobile-tool-btn" onclick="openToolDrawer('page')"><i class="fa-solid fa-palette"></i><span>Color</span></button>
+          <button class="mobile-tool-btn" onclick="duplicateCurrentSlide()"><i class="fa-regular fa-copy"></i><span>Duplicate</span></button>
+          <button class="mobile-done-btn" onclick="deselectAll()" title="Done"><i class="fa-solid fa-check"></i></button>
+        `;
+        return;
+      }
+
+      const tabs = [
+        { id: 'templates', icon: 'fa-solid fa-table-columns', label: 'Templates' },
+        { id: 'elements', icon: 'fa-solid fa-shapes', label: 'Elements' },
+        { id: 'text', icon: 'fa-solid fa-font', label: 'Text' },
+        { id: 'charts', icon: 'fa-solid fa-chart-pie', label: 'Charts' },
+        { id: 'uploads', icon: 'fa-solid fa-cloud-arrow-up', label: 'Uploads' },
+        { id: 'page', icon: 'fa-solid fa-palette', label: 'Page' }
+      ];
+
+      bar.innerHTML = tabs.map(t => `
+        <button class="mobile-tool-btn ${activeToolTab === t.id ? 'active' : ''}" onclick="toggleToolDrawer('${t.id}')">
+          <i class="${t.icon}"></i>
+          <span>${t.label}</span>
+        </button>
+      `).join('');
+    }
+
+    function deselectAll() {
+      pageSelected = false;
+      if (fabricCanvas) {
+        fabricCanvas.discardActiveObject();
+        fabricCanvas.requestRenderAll();
+      }
+      updateSelectionUI();
+    }
+
+    /* ============================================================
+       OBJECT PROPERTY MANIPULATION
+    ============================================================ */
+    function setSelectedProp(prop, value) {
+      const obj = fabricCanvas.getActiveObject();
+      if (!obj) return;
+      obj.set(prop, value);
+      fabricCanvas.requestRenderAll();
+      pushHistorySnapshot();
+      scheduleSlideSave();
+    }
+
+    async function changeSelectedTextFont(fontName) {
+      const obj = fabricCanvas.getActiveObject();
+      if (!obj) return;
+      await loadGoogleFont(fontName);
+      obj.set('fontFamily', fontName);
+      obj.initDimensions();
+      fabricCanvas.requestRenderAll();
+      pushHistorySnapshot();
+      scheduleSlideSave();
+      updateSelectionUI();
+    }
+
+    function toggleBoldText() {
+      const obj = fabricCanvas.getActiveObject();
+      if (!obj) return;
+      const isBold = obj.fontWeight === 'bold' || obj.fontWeight >= 700;
+      setSelectedProp('fontWeight', isBold ? 'normal' : 'bold');
+      updateSelectionUI();
+    }
+
+    function toggleItalicText() {
+      const obj = fabricCanvas.getActiveObject();
+      if (!obj) return;
+      setSelectedProp('fontStyle', obj.fontStyle === 'italic' ? 'normal' : 'italic');
+      updateSelectionUI();
+    }
+
+    function toggleUnderlineText() {
+      const obj = fabricCanvas.getActiveObject();
+      if (!obj) return;
+      setSelectedProp('underline', !obj.underline);
+      updateSelectionUI();
+    }
+
+    function cycleTextAlign() {
+      const obj = fabricCanvas.getActiveObject();
+      if (!obj) return;
+      const order = ['left', 'center', 'right'];
+      const next = order[(order.indexOf(obj.textAlign || 'left') + 1) % order.length];
+      setSelectedProp('textAlign', next);
+      updateSelectionUI();
+    }
+
+    function getObjectColor(obj) {
+      if (!obj) return '#3b82f6';
+      if (obj.svgColor) return obj.svgColor;
+      if (typeof obj.fill === 'string') return obj.fill;
+      if (typeof obj.stroke === 'string') return obj.stroke;
+      return '#3b82f6';
+    }
+
+    function recolorSelectedObject(color) {
+      const obj = fabricCanvas.getActiveObject();
+      if (!obj) return;
+      if (obj.objectType === 'icon' || obj.type === 'group') {
+        obj.set('svgColor', color);
+        if (obj._objects) {
+          obj._objects.forEach(sub => {
+            if (sub.fill && sub.fill !== 'none' && sub.fill !== 'transparent') sub.set('fill', color);
+            if (sub.stroke && sub.stroke !== 'none' && sub.stroke !== 'transparent') sub.set('stroke', color);
+          });
+        } else {
+          if (obj.fill && obj.fill !== 'none' && obj.fill !== 'transparent') obj.set('fill', color);
+          if (obj.stroke && obj.stroke !== 'none' && obj.stroke !== 'transparent') obj.set('stroke', color);
+        }
+      } else if (obj.type === 'line') {
+        obj.set('stroke', color);
+      } else {
+        obj.set('fill', color);
+      }
+      fabricCanvas.requestRenderAll();
+      pushHistorySnapshot();
+      scheduleSlideSave();
+    }
+
+    function duplicateSelectedObject() {
+      const obj = fabricCanvas.getActiveObject();
+      if (!obj) return;
+      obj.clone((cloned) => {
+        cloned.set({
+          left: (obj.left || 0) + 28,
+          top: (obj.top || 0) + 28,
+          customId: uid('obj')
+        });
+        fabricCanvas.add(cloned);
+        fabricCanvas.setActiveObject(cloned);
+        fabricCanvas.requestRenderAll();
+      }, FABRIC_PROPS);
+    }
+
+    function deleteSelectedObject() {
+      const activeObjects = fabricCanvas.getActiveObjects();
+      if (!activeObjects.length) return;
+      fabricCanvas.discardActiveObject();
+      activeObjects.forEach(o => fabricCanvas.remove(o));
+      fabricCanvas.requestRenderAll();
+      updateSelectionUI();
+    }
+
+    function bringSelectedForward() {
+      const obj = fabricCanvas.getActiveObject();
+      if (!obj) return;
+      fabricCanvas.bringForward(obj);
+      fabricCanvas.requestRenderAll();
+      pushHistorySnapshot();
+      scheduleSlideSave();
+    }
+
+    function sendSelectedBackward() {
+      const obj = fabricCanvas.getActiveObject();
+      if (!obj) return;
+      fabricCanvas.sendBackwards(obj);
+      fabricCanvas.requestRenderAll();
+      pushHistorySnapshot();
+      scheduleSlideSave();
+    }
+
+    function toHex(color) {
+      if (!color || typeof color !== 'string') return '#3b82f6';
+      if (/^#[0-9a-f]{6}$/i.test(color)) return color;
+      const ctx = document.createElement('canvas').getContext('2d');
+      ctx.fillStyle = color;
+      return /^#[0-9a-f]{6}$/i.test(ctx.fillStyle) ? ctx.fillStyle : '#3b82f6';
+    }
+
+    function capitalize(s) {
+      return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+    }
+
+    /* ============================================================
+       TOOL DRAWERS (Templates, Elements + Iconify, Text + Google Fonts,
+       Charts + Chart.js, Uploads, Page Background)
+    ============================================================ */
+    function toggleToolDrawer(tab) {
+      if (activeToolTab === tab && document.getElementById('toolDrawer').classList.contains('open')) {
+        closeToolDrawer();
+      } else {
+        openToolDrawer(tab);
+      }
+    }
+
+    function openToolDrawer(tab) {
+      activeToolTab = tab;
+      document.getElementById('toolDrawer').classList.add('open');
+
+      document.querySelectorAll('.rail-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.tab === tab);
+      });
+
+      const titles = {
+        templates: 'Slide Templates',
+        elements: 'Shapes & Icons',
+        text: 'Text & Google Fonts',
+        charts: 'Interactive Charts',
+        uploads: 'Upload Media',
+        page: 'Page & Transitions'
+      };
+      document.getElementById('drawerTitle').textContent = titles[tab] || 'Tools';
+      renderDrawerContent(tab);
+      renderMobileBottomBar(fabricCanvas?.getActiveObject());
+    }
+
+    function closeToolDrawer() {
+      activeToolTab = null;
+      document.getElementById('toolDrawer').classList.remove('open');
+      document.querySelectorAll('.rail-btn').forEach(b => b.classList.remove('active'));
+      renderMobileBottomBar(fabricCanvas?.getActiveObject());
+    }
+
+    function renderDrawerContent(tab) {
+      const content = document.getElementById('drawerContent');
+
+      if (tab === 'templates') {
+        content.innerHTML = `
+          <p style="font-size:12.5px; color:var(--text-secondary); margin-bottom:12px;">
+            Apply a clean layout to the current slide or start from scratch.
+          </p>
+          <div class="templates-grid">
+            <button class="template-card" onclick="applySlideTemplate('hero')">
+              <div class="template-preview" style="background:linear-gradient(135deg,#00c4cc,#7d2ae8); color:#fff;">
+                <div style="font-weight:800; font-size:12px;">Presentation Title</div>
+                <div style="font-size:9px; opacity:0.85;">Subtitle & Tagline</div>
+              </div>
+              <div class="template-label">Ocean Gradient Hero</div>
+            </button>
+
+            <button class="template-card" onclick="applySlideTemplate('kpi')">
+              <div class="template-preview" style="background:#ffffff;">
+                <div style="font-weight:800; font-size:11px; color:#111827; margin-bottom:5px;">Quarterly Growth</div>
+                <div style="display:flex; gap:4px; align-items:flex-end; height:28px;">
+                  <div style="flex:1; height:45%; background:#00c4cc; border-radius:2px;"></div>
+                  <div style="flex:1; height:70%; background:#3b82f6; border-radius:2px;"></div>
+                  <div style="flex:1; height:100%; background:#7d2ae8; border-radius:2px;"></div>
+                </div>
+              </div>
+              <div class="template-label">KPI & Live Chart</div>
+            </button>
+
+            <button class="template-card" onclick="applySlideTemplate('features')">
+              <div class="template-preview" style="background:#f8fafc;">
+                <div style="font-weight:800; font-size:10px; color:#111827; margin-bottom:5px;">Key Highlights</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px;">
+                  <div style="height:26px; background:#fff; border-radius:4px; border:1px solid #e2e8f0;"></div>
+                  <div style="height:26px; background:#fff; border-radius:4px; border:1px solid #e2e8f0;"></div>
+                  <div style="height:26px; background:#fff; border-radius:4px; border:1px solid #e2e8f0;"></div>
+                </div>
+              </div>
+              <div class="template-label">3-Card Pillars</div>
+            </button>
+
+            <button class="template-card" onclick="applySlideTemplate('quote')">
+              <div class="template-preview" style="background:#0f172a; color:#fff;">
+                <div style="width:24px; height:3px; background:#00c4cc; margin-bottom:5px;"></div>
+                <div style="font-weight:700; font-size:10px;">“Design is intelligence made visible.”</div>
+              </div>
+              <div class="template-label">Dark Statement</div>
+            </button>
+
+            <button class="template-card" onclick="applySlideTemplate('split')">
+              <div class="template-preview" style="background:#ffffff; display:grid; grid-template-columns:1fr 1fr; padding:0;">
+                <div style="background:linear-gradient(180deg,#2563eb,#7d2ae8);"></div>
+                <div style="padding:8px; display:flex; flex-direction:column; justify-content:center;">
+                  <div style="height:6px; width:80%; background:#111827; border-radius:2px; margin-bottom:4px;"></div>
+                  <div style="height:4px; width:60%; background:#9ca3af; border-radius:2px;"></div>
+                </div>
+              </div>
+              <div class="template-label">Modern Split</div>
+            </button>
+
+            <button class="template-card" onclick="applySlideTemplate('thankyou')">
+              <div class="template-preview" style="background:linear-gradient(135deg,#e0f7fa,#f3e8ff); align-items:center; text-align:center;">
+                <div style="font-weight:800; font-size:13px; color:#4c1d95;">Thank You</div>
+                <div style="font-size:8.5px; color:#6b7280;">Questions & Discussion</div>
+              </div>
+              <div class="template-label">Clean Closing</div>
+            </button>
+          </div>
+        `;
+      } else if (tab === 'elements') {
+        content.innerHTML = `
+          <div class="drawer-section-label">Geometric Shapes</div>
+          <div class="shapes-grid">
+            <button class="shape-tile" onclick="addShape('rect')" title="Rectangle">
+              <svg width="28" height="28"><rect x="3" y="5" width="22" height="18" rx="2" fill="#3b82f6"/></svg>
+            </button>
+            <button class="shape-tile" onclick="addShape('rounded')" title="Rounded Pill">
+              <svg width="28" height="28"><rect x="2" y="7" width="24" height="14" rx="7" fill="#7d2ae8"/></svg>
+            </button>
+            <button class="shape-tile" onclick="addShape('circle')" title="Circle">
+              <svg width="28" height="28"><circle cx="14" cy="14" r="10" fill="#00c4cc"/></svg>
+            </button>
+            <button class="shape-tile" onclick="addShape('triangle')" title="Triangle">
+              <svg width="28" height="28"><polygon points="14,3 25,24 3,24" fill="#6366f1"/></svg>
+            </button>
+            <button class="shape-tile" onclick="addShape('diamond')" title="Diamond">
+              <svg width="28" height="28"><polygon points="14,2 25,14 14,26 3,14" fill="#ec4899"/></svg>
+            </button>
+            <button class="shape-tile" onclick="addShape('star')" title="Star">
+              <svg width="28" height="28" viewBox="0 0 24 24"><path fill="#f59e0b" d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14 2 9.27l6.91-1.01z"/></svg>
+            </button>
+            <button class="shape-tile" onclick="addShape('hexagon')" title="Hexagon">
+              <svg width="28" height="28" viewBox="0 0 24 24"><polygon fill="#10b981" points="12,2 21,7 21,17 12,22 3,17 3,7"/></svg>
+            </button>
+            <button class="shape-tile" onclick="addShape('line')" title="Line Divider">
+              <svg width="28" height="28"><line x1="3" y1="22" x2="25" y2="6" stroke="#1e293b" stroke-width="3" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+
+          <div class="drawer-section-label">Icons (Powered by Iconify API)</div>
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass" style="color:var(--text-muted); font-size:13px;"></i>
+            <input type="text" id="iconifySearchInput" placeholder="Search 200k+ icons (e.g. rocket, chart)..." value="${escapeHtml(currentIconQuery)}" />
+          </div>
+          <div class="pill-chips" style="margin-bottom:10px;">
+            ${['business', 'arrow', 'chart', 'tech', 'user', 'idea'].map(tag => `
+              <button class="chip-btn ${currentIconQuery === tag ? 'active' : ''}" onclick="searchIconify('${tag}', true)">${capitalize(tag)}</button>
+            `).join('')}
+          </div>
+          <div class="icons-grid" id="iconifyResultsGrid">
+            <div style="grid-column:1/-1; text-align:center; padding:18px; color:var(--text-secondary); font-size:13px;">
+              Loading icons...
+            </div>
+          </div>
+        `;
+
+        const inp = document.getElementById('iconifySearchInput');
+        let debTimer = null;
+        inp.addEventListener('input', () => {
+          clearTimeout(debTimer);
+          debTimer = setTimeout(() => {
+            searchIconify(inp.value.trim() || 'business', false);
+          }, 360);
+        });
+
+        searchIconify(currentIconQuery, false);
+      } else if (tab === 'text') {
+        content.innerHTML = `
+          <button class="text-preset-btn" onclick="addTextElement('heading')">
+            <div style="font-size:20px; font-weight:800; color:#111827;">Add a heading</div>
+          </button>
+          <button class="text-preset-btn" onclick="addTextElement('subheading')">
+            <div style="font-size:15.5px; font-weight:600; color:#374151;">Add a subheading</div>
+          </button>
+          <button class="text-preset-btn" onclick="addTextElement('body')">
+            <div style="font-size:13px; color:#6b7280;">Add a little bit of body text</div>
+          </button>
+
+          <div class="drawer-section-label">Google Fonts Library</div>
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass" style="color:var(--text-muted); font-size:13px;"></i>
+            <input type="text" id="fontSearchInput" placeholder="Filter or load any Google Font..." value="${escapeHtml(fontSearchFilter)}" />
+          </div>
+          <div id="customGoogleFontAction"></div>
+          <div class="font-list" id="googleFontList"></div>
+        `;
+
+        const fInput = document.getElementById('fontSearchInput');
+        fInput.addEventListener('input', () => {
+          fontSearchFilter = fInput.value;
+          renderGoogleFontsList();
+        });
+        renderGoogleFontsList();
+      } else if (tab === 'charts') {
+        content.innerHTML = `
+          <p style="font-size:12.5px; color:var(--text-secondary); margin-bottom:12px;">
+            Insert an interactive Chart.js visual. Double-click any chart on the slide to edit live data.
+          </p>
+          <div class="charts-grid">
+            <button class="chart-type-card" onclick="insertChartElement('bar')">
+              <i class="fa-solid fa-chart-column"></i><span>Bar Chart</span>
+            </button>
+            <button class="chart-type-card" onclick="insertChartElement('line')">
+              <i class="fa-solid fa-chart-line"></i><span>Line Chart</span>
+            </button>
+            <button class="chart-type-card" onclick="insertChartElement('doughnut')">
+              <i class="fa-solid fa-circle-notch"></i><span>Doughnut</span>
+            </button>
+            <button class="chart-type-card" onclick="insertChartElement('pie')">
+              <i class="fa-solid fa-chart-pie"></i><span>Pie Chart</span>
+            </button>
+            <button class="chart-type-card" onclick="insertChartElement('radar')">
+              <i class="fa-solid fa-spider"></i><span>Radar Chart</span>
+            </button>
+            <button class="chart-type-card" onclick="insertChartElement('polarArea')">
+              <i class="fa-solid fa-bullseye"></i><span>Polar Area</span>
+            </button>
+          </div>
+        `;
+      } else if (tab === 'uploads') {
+        content.innerHTML = `
+          <div class="upload-dropzone" id="uploadDropzone">
+            <i class="fa-solid fa-cloud-arrow-up" style="font-size:28px; color:var(--purple); margin-bottom:8px;"></i>
+            <div style="font-weight:700; font-size:14px; margin-bottom:4px;">Upload Image</div>
+            <div style="font-size:12px; color:var(--text-secondary);">Tap to choose PNG, JPG, SVG, or WebP</div>
+            <input type="file" id="imageFileInput" accept="image/*" class="hidden" />
+          </div>
+
+          <div class="drawer-section-label">Insert from Image URL</div>
+          <div style="display:flex; gap:6px;">
+            <input type="url" class="modal-input" id="imageUrlInput" placeholder="https://..." style="margin-bottom:0; padding:9px 11px; font-size:13px;" />
+            <button class="btn-gradient" style="padding:8px 14px; border-radius:10px;" onclick="insertImageFromUrl()">Add</button>
+          </div>
+        `;
+
+        const drop = document.getElementById('uploadDropzone');
+        const fileInput = document.getElementById('imageFileInput');
+        drop.onclick = () => fileInput.click();
+        fileInput.onchange = (e) => {
+          if (e.target.files[0]) handleImageUploadFile(e.target.files[0]);
+        };
+        drop.ondragover = (e) => { e.preventDefault(); drop.classList.add('dragover'); };
+        drop.ondragleave = () => drop.classList.remove('dragover');
+        drop.ondrop = (e) => {
+          e.preventDefault();
+          drop.classList.remove('dragover');
+          if (e.dataTransfer.files[0]) handleImageUploadFile(e.dataTransfer.files[0]);
+        };
+      } else if (tab === 'page') {
+        const slide = getCurrentSlide();
+        if (!slide) return;
+        content.innerHTML = `
+          <div class="drawer-section-label">Custom Solid Color</div>
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+            <label class="color-swatch-btn" style="background:${slide.background?.color || '#ffffff'}; width:36px; height:36px;">
+              <input type="color" value="${toHex(slide.background?.color || '#ffffff')}" oninput="setSlideSolidBg(this.value)" />
+            </label>
+            <span style="font-size:13px; font-weight:600; color:var(--text-secondary);">Pick any background tint</span>
+          </div>
+
+          <div class="drawer-section-label">Gradients & Presets</div>
+          <div class="swatch-grid">
+            ${SLIDE_BG_PRESETS.map((p, i) => `
+              <button class="bg-swatch" style="background:${p.css};" onclick="applyBgPreset(${i})" title="Apply Background"></button>
+            `).join('')}
+          </div>
+
+          <div class="drawer-section-label" style="margin-top:18px;">Reveal.js Slide Animation</div>
+          <div class="switch-row">
+            <div>
+              <div style="font-size:13px; font-weight:700;">Auto-Animate</div>
+              <div style="font-size:11.5px; color:var(--text-secondary);">Magic Move across matching objects</div>
+            </div>
+            <input type="checkbox" class="toggle-switch" ${slide.autoAnimate ? 'checked' : ''} onchange="toggleSlideAutoAnimate(this.checked)" />
+          </div>
+
+          <div class="pill-chips">
+            ${['slide', 'fade', 'convex', 'concave', 'zoom', 'none'].map(tr => `
+              <button class="chip-btn ${(slide.transition || 'slide') === tr ? 'active' : ''}" onclick="setSlideTransition('${tr}')">${capitalize(tr)}</button>
+            `).join('')}
+          </div>
+        `;
+      }
+    }
+
+    /* ============================================================
+       SHAPES & ICONIFY API
+    ============================================================ */
+    function addShape(kind) {
+      const cx = LOGICAL_W / 2;
+      const cy = LOGICAL_H / 2;
+      let shape = null;
+
+      if (kind === 'rect') {
+        shape = new fabric.Rect({ width: 180, height: 120, fill: '#3b82f6', rx: 4, ry: 4 });
+      } else if (kind === 'rounded') {
+        shape = new fabric.Rect({ width: 220, height: 76, fill: '#7d2ae8', rx: 38, ry: 38 });
+      } else if (kind === 'circle') {
+        shape = new fabric.Circle({ radius: 75, fill: '#00c4cc' });
+      } else if (kind === 'triangle') {
+        shape = new fabric.Triangle({ width: 150, height: 135, fill: '#6366f1' });
+      } else if (kind === 'diamond') {
+        shape = new fabric.Polygon([
+          { x: 0, y: -75 }, { x: 75, y: 0 }, { x: 0, y: 75 }, { x: -75, y: 0 }
+        ], { fill: '#ec4899' });
+      } else if (kind === 'star') {
+        const pts = [];
+        for (let i = 0; i < 10; i++) {
+          const r = i % 2 === 0 ? 75 : 33;
+          const a = (Math.PI / 5) * i - Math.PI / 2;
+          pts.push({ x: Math.cos(a) * r, y: Math.sin(a) * r });
+        }
+        shape = new fabric.Polygon(pts, { fill: '#f59e0b' });
+      } else if (kind === 'hexagon') {
+        const pts = [];
+        for (let i = 0; i < 6; i++) {
+          const a = (Math.PI / 3) * i - Math.PI / 2;
+          pts.push({ x: Math.cos(a) * 72, y: Math.sin(a) * 72 });
+        }
+        shape = new fabric.Polygon(pts, { fill: '#10b981' });
+      } else if (kind === 'line') {
+        shape = new fabric.Line([0, 0, 260, 0], { stroke: '#1e293b', strokeWidth: 5, strokeLineCap: 'round' });
+      }
+
+      if (!shape) return;
+      shape.set({
+        left: cx, top: cy, originX: 'center', originY: 'center',
+        customId: uid('shape'), objectType: 'shape'
+      });
+      fabricCanvas.add(shape);
+      fabricCanvas.setActiveObject(shape);
+      fabricCanvas.requestRenderAll();
+      if (window.innerWidth < 900) closeToolDrawer();
+    }
+
+    async function fetchIconifyWithFallback(path) {
+      for (const host of ICONIFY_HOSTS) {
+        try {
+          const res = await fetch(`${host}${path}`);
+          if (res.ok) return res;
+        } catch (err) {
+          // Try next Iconify mirror host
+        }
+      }
+      throw new Error('All Iconify hosts failed');
+    }
+
+    function buildSvgFromIconifyJson(jsonData, iconName) {
+      if (!jsonData) return null;
+      const iconData = jsonData.icons?.[iconName];
+      let merged = iconData ? { ...iconData } : null;
+
+      if (!merged && jsonData.aliases?.[iconName]) {
+        let cur = jsonData.aliases[iconName];
+        let guard = 0;
+        const chain = [cur];
+        while (cur && cur.parent && !jsonData.icons?.[cur.parent] && jsonData.aliases?.[cur.parent] && guard < 5) {
+          cur = jsonData.aliases[cur.parent];
+          chain.push(cur);
+          guard++;
+        }
+        const base = cur?.parent ? jsonData.icons?.[cur.parent] : null;
+        if (base) {
+          merged = { ...base };
+          for (let i = chain.length - 1; i >= 0; i--) {
+            const a = chain[i];
+            if (a.left !== undefined) merged.left = a.left;
+            if (a.top !== undefined) merged.top = a.top;
+            if (a.width !== undefined) merged.width = a.width;
+            if (a.height !== undefined) merged.height = a.height;
+            if (a.hFlip !== undefined) merged.hFlip = a.hFlip ? !merged.hFlip : merged.hFlip;
+            if (a.vFlip !== undefined) merged.vFlip = a.vFlip ? !merged.vFlip : merged.vFlip;
+            if (a.rotate !== undefined) merged.rotate = ((merged.rotate || 0) + a.rotate) % 4;
+          }
+        }
+      }
+
+      if (!merged || !merged.body) return null;
+
+      const left = merged.left ?? jsonData.left ?? 0;
+      const top = merged.top ?? jsonData.top ?? 0;
+      const width = merged.width ?? jsonData.width ?? 16;
+      const height = merged.height ?? jsonData.height ?? 16;
+
+      let body = merged.body;
+      const transforms = [];
+      if (merged.hFlip) transforms.push(`translate(${left * 2 + width}, 0) scale(-1, 1)`);
+      if (merged.vFlip) transforms.push(`translate(0, ${top * 2 + height}) scale(1, -1)`);
+      if (merged.rotate) {
+        const deg = (merged.rotate % 4) * 90;
+        if (deg) transforms.push(`rotate(${deg} ${left + width / 2} ${top + height / 2})`);
+      }
+      if (transforms.length) {
+        body = `<g transform="${transforms.join(' ')}">${body}</g>`;
+      }
+
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${left} ${top} ${width} ${height}">${body}</svg>`;
+    }
+
+    function svgToDataUri(svgStr, previewColor = '#1e293b') {
+      let s = (svgStr || '').trim();
+      if (!/\bxmlns=/.test(s)) {
+        s = s.replace(/<svg\b/i, '<svg xmlns="http://www.w3.org/2000/svg"');
+      }
+      s = s.replace(/currentColor/gi, previewColor);
+      return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(s)}`;
+    }
+
+    async function fetchSingleIconSvg(iconId) {
+      if (iconSvgCache.has(iconId)) return iconSvgCache.get(iconId);
+
+      const colonIdx = iconId.indexOf(':');
+      if (colonIdx === -1) throw new Error('Invalid icon id');
+      const prefix = iconId.slice(0, colonIdx);
+      const name = iconId.slice(colonIdx + 1);
+
+      // 1. Try JSON data endpoint across mirror hosts
+      try {
+        const res = await fetchIconifyWithFallback(`/${encodeURIComponent(prefix)}.json?icons=${encodeURIComponent(name)}`);
+        const jsonData = await res.json();
+        const built = buildSvgFromIconifyJson(jsonData, name);
+        if (built) {
+          iconSvgCache.set(iconId, built);
+          return built;
+        }
+      } catch (e) {
+        // Fallback to raw SVG endpoint
+      }
+
+      // 2. Try raw .svg endpoint across mirror hosts
+      const svgRes = await fetchIconifyWithFallback(`/${encodeURIComponent(prefix)}/${encodeURIComponent(name)}.svg`);
+      const svgText = await svgRes.text();
+      if (!svgText || !svgText.includes('<svg')) {
+        throw new Error('Invalid SVG payload');
+      }
+      iconSvgCache.set(iconId, svgText);
+      return svgText;
+    }
+
+    async function prefetchIconBatch(iconIds, onIconReady) {
+      const byPrefix = new Map();
+      iconIds.forEach(id => {
+        if (iconSvgCache.has(id)) {
+          onIconReady(id, iconSvgCache.get(id));
+          return;
+        }
+        const colonIdx = id.indexOf(':');
+        if (colonIdx === -1) return;
+        const prefix = id.slice(0, colonIdx);
+        const name = id.slice(colonIdx + 1);
+        if (!byPrefix.has(prefix)) byPrefix.set(prefix, []);
+        byPrefix.get(prefix).push({ id, name });
+      });
+
+      const tasks = [...byPrefix.entries()];
+      const concurrency = 4;
+      let cursor = 0;
+
+      async function worker() {
+        while (cursor < tasks.length) {
+          const [prefix, items] = tasks[cursor++];
+          const namesParam = items.map(it => encodeURIComponent(it.name)).join(',');
+          let missing = items;
+
+          try {
+            const res = await fetchIconifyWithFallback(`/${encodeURIComponent(prefix)}.json?icons=${namesParam}`);
+            const jsonData = await res.json();
+            missing = [];
+            items.forEach(({ id, name }) => {
+              const svg = buildSvgFromIconifyJson(jsonData, name);
+              if (svg) {
+                iconSvgCache.set(id, svg);
+                onIconReady(id, svg);
+              } else {
+                missing.push({ id, name });
+              }
+            });
+          } catch (e) {
+            // Fall back individually below
+          }
+
+          for (const { id } of missing) {
+            try {
+              const svg = await fetchSingleIconSvg(id);
+              onIconReady(id, svg);
+            } catch (err) {
+              // Ignore missing individual item
+            }
+          }
+        }
+      }
+
+      await Promise.all(Array.from({ length: Math.min(concurrency, tasks.length) }, () => worker()));
+    }
+
+    async function searchIconify(query, updateInput) {
+      const seq = ++iconSearchSeq;
+      currentIconQuery = query;
+      if (updateInput) {
+        const inp = document.getElementById('iconifySearchInput');
+        if (inp) inp.value = query;
+        document.querySelectorAll('#toolDrawer .chip-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.textContent.toLowerCase() === query.toLowerCase());
+        });
+      }
+
+      const grid = document.getElementById('iconifyResultsGrid');
+      if (!grid) return;
+
+      try {
+        const res = await fetchIconifyWithFallback(`/search?query=${encodeURIComponent(query)}&limit=36`);
+        if (seq !== iconSearchSeq) return;
+        const data = await res.json();
+        const icons = data.icons || [];
+        iconResultsCache = icons;
+
+        if (icons.length === 0) {
+          grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:16px; color:var(--text-secondary); font-size:13px;">No icons found for "${escapeHtml(query)}"</div>`;
+          return;
+        }
+
+        grid.innerHTML = '';
+        const tileById = new Map();
+
+        icons.forEach(iconId => {
+          const btn = document.createElement('button');
+          btn.className = 'icon-tile';
+          btn.title = iconId;
+          btn.innerHTML = iconSvgCache.has(iconId)
+            ? `<img src="${svgToDataUri(iconSvgCache.get(iconId))}" alt="${escapeHtml(iconId)}" />`
+            : `<i class="fa-solid fa-spinner fa-spin" style="font-size:14px; color:var(--text-muted);"></i>`;
+          btn.addEventListener('click', () => insertIconifyIcon(iconId));
+          grid.appendChild(btn);
+          tileById.set(iconId, btn);
+        });
+
+        await prefetchIconBatch(icons, (iconId, svgStr) => {
+          if (seq !== iconSearchSeq) return;
+          const tile = tileById.get(iconId);
+          if (tile) {
+            tile.innerHTML = `<img src="${svgToDataUri(svgStr)}" alt="${escapeHtml(iconId)}" />`;
+          }
+        });
+      } catch (err) {
+        if (seq !== iconSearchSeq) return;
+        // Offline Fallback SVG Icons
+        grid.innerHTML = Object.entries(OFFLINE_FALLBACK_ICONS).map(([key, svg]) => `
+          <button class="icon-tile" title="${key}" onclick="insertRawSvgIcon('${key}')">
+            ${svg}
+          </button>
+        `).join('');
+      }
+    }
+
+    async function insertIconifyIcon(iconId) {
+      try {
+        const svgStr = await fetchSingleIconSvg(iconId);
+        addSvgStringToCanvas(svgStr, '#4f46e5');
+      } catch (e) {
+        showToast('Could not fetch icon SVG');
+      }
+    }
+
+    function insertRawSvgIcon(key) {
+      const svgStr = OFFLINE_FALLBACK_ICONS[key];
+      if (svgStr) addSvgStringToCanvas(svgStr, '#4f46e5');
+    }
+
+    function normalizeSvgForFabric(svgStr, defaultColor) {
+      let s = (svgStr || '').trim();
+      if (!/\bxmlns=/.test(s)) {
+        s = s.replace(/<svg\b/i, '<svg xmlns="http://www.w3.org/2000/svg"');
+      }
+      s = s.replace(/currentColor/gi, defaultColor);
+
+      const vbMatch = s.match(/viewBox=["']\s*([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s*["']/i);
+      const vbW = vbMatch ? parseFloat(vbMatch[3]) : 24;
+      const vbH = vbMatch ? parseFloat(vbMatch[4]) : 24;
+
+      s = s.replace(/<svg\b([^>]*)>/i, (full, attrs) => {
+        let updated = attrs
+          .replace(/\bwidth=["'][^"']*em["']/gi, `width="${vbW}"`)
+          .replace(/\bheight=["'][^"']*em["']/gi, `height="${vbH}"`);
+        if (!/\bwidth=/i.test(updated)) updated += ` width="${vbW}"`;
+        if (!/\bheight=/i.test(updated)) updated += ` height="${vbH}"`;
+        return `<svg${updated}>`;
+      });
+      return s;
+    }
+
+    function addSvgStringToCanvas(svgStr, defaultColor) {
+      const hadCurrentColor = /currentColor/i.test(svgStr);
+      const processedSvg = normalizeSvgForFabric(svgStr, defaultColor);
+
+      const fallbackRasterInsert = () => {
+        const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(processedSvg);
+        fabric.Image.fromURL(dataUrl, (img) => {
+          if (!img || !img.width) {
+            showToast('Could not parse icon SVG');
+            return;
+          }
+          const scale = 110 / Math.max(img.width || 100, img.height || 100);
+          img.set({
+            left: LOGICAL_W / 2,
+            top: LOGICAL_H / 2,
+            originX: 'center',
+            originY: 'center',
+            scaleX: scale,
+            scaleY: scale,
+            customId: uid('icon'),
+            objectType: 'icon',
+            svgColor: defaultColor
+          });
+          fabricCanvas.add(img);
+          fabricCanvas.setActiveObject(img);
+          fabricCanvas.requestRenderAll();
+          if (window.innerWidth < 900) closeToolDrawer();
+        });
+      };
+
+      try {
+        fabric.loadSVGFromString(processedSvg, (objects, options) => {
+          const validObjects = (objects || []).filter(Boolean);
+          if (validObjects.length === 0) {
+            fallbackRasterInsert();
+            return;
+          }
+
+          const grp = fabric.util.groupSVGElements(validObjects, options);
+          const maxDim = Math.max(grp.width || 0, grp.height || 0);
+          if (!maxDim || !isFinite(maxDim)) {
+            fallbackRasterInsert();
+            return;
+          }
+
+          const scale = 110 / maxDim;
+          grp.set({
+            left: LOGICAL_W / 2,
+            top: LOGICAL_H / 2,
+            originX: 'center',
+            originY: 'center',
+            scaleX: scale,
+            scaleY: scale,
+            customId: uid('icon'),
+            objectType: 'icon',
+            svgColor: defaultColor
+          });
+
+          if (!hadCurrentColor) {
+            const subList = grp._objects || [grp];
+            const distinctColors = new Set();
+            subList.forEach(o => {
+              if (typeof o.fill === 'string' && o.fill !== 'none' && o.fill !== 'transparent') distinctColors.add(o.fill.toLowerCase());
+              if (typeof o.stroke === 'string' && o.stroke !== 'none' && o.stroke !== 'transparent') distinctColors.add(o.stroke.toLowerCase());
+            });
+            if (distinctColors.size <= 1) {
+              subList.forEach(o => {
+                if (o.fill && o.fill !== 'none' && o.fill !== 'transparent') o.set('fill', defaultColor);
+                else if (!o.fill && (!o.stroke || o.stroke === 'none')) o.set('fill', defaultColor);
+                if (o.stroke && o.stroke !== 'none' && o.stroke !== 'transparent') o.set('stroke', defaultColor);
+              });
+            }
+          }
+
+          fabricCanvas.add(grp);
+          fabricCanvas.setActiveObject(grp);
+          fabricCanvas.requestRenderAll();
+          if (window.innerWidth < 900) closeToolDrawer();
+        });
+      } catch (err) {
+        fallbackRasterInsert();
+      }
+    }
+
+    /* ============================================================
+       TEXT & GOOGLE FONTS
+    ============================================================ */
+    async function addTextElement(preset) {
+      const presets = {
+        heading: { text: 'Slide Heading', fontSize: 52, fontWeight: 'bold', width: 540, fill: '#111827' },
+        subheading: { text: 'Add a clear subheading here', fontSize: 30, fontWeight: '600', width: 480, fill: '#374151' },
+        body: { text: 'Double-click to edit body text. Drag corners to resize or wrap naturally.', fontSize: 20, fontWeight: 'normal', width: 420, fill: '#4b5563' }
+      };
+      const cfg = presets[preset] || presets.body;
+      const tb = new fabric.Textbox(cfg.text, {
+        left: LOGICAL_W / 2,
+        top: LOGICAL_H / 2,
+        originX: 'center',
+        originY: 'center',
+        width: cfg.width,
+        fontSize: cfg.fontSize,
+        fontWeight: cfg.fontWeight,
+        fontFamily: 'Plus Jakarta Sans',
+        fill: cfg.fill,
+        textAlign: 'center',
+        customId: uid('txt'),
+        objectType: 'text'
+      });
+
+      fabricCanvas.add(tb);
+      fabricCanvas.setActiveObject(tb);
+      fabricCanvas.requestRenderAll();
+      if (window.innerWidth < 900) closeToolDrawer();
+    }
+
+    function renderGoogleFontsList() {
+      const listEl = document.getElementById('googleFontList');
+      const customEl = document.getElementById('customGoogleFontAction');
+      if (!listEl) return;
+
+      const q = fontSearchFilter.trim().toLowerCase();
+      const filtered = GOOGLE_FONTS.filter(f => f.toLowerCase().includes(q));
+
+      if (q && !GOOGLE_FONTS.some(f => f.toLowerCase() === q)) {
+        const titleCase = fontSearchFilter.trim().replace(/\b\w/g, c => c.toUpperCase());
+        customEl.innerHTML = `
+          <button class="btn-secondary" style="width:100%; margin-bottom:8px; text-align:left;" onclick="applyFontFromDrawer('${escapeHtml(titleCase)}')">
+            <i class="fa-solid fa-cloud-arrow-down" style="color:var(--purple); margin-right:6px;"></i>
+            Load Google Font "<strong>${escapeHtml(titleCase)}</strong>"
+          </button>
+        `;
+      } else {
+        customEl.innerHTML = '';
+      }
+
+      const active = fabricCanvas?.getActiveObject();
+      const activeFont = active?.fontFamily?.replace(/['"]/g, '');
+
+      listEl.innerHTML = filtered.map(font => {
+        loadGoogleFont(font);
+        return `
+          <button class="font-item-btn ${activeFont === font ? 'active' : ''}" style="font-family:'${escapeHtml(font)}', sans-serif;" onclick="applyFontFromDrawer('${escapeHtml(font)}')">
+            <span>${escapeHtml(font)}</span>
+            ${activeFont === font ? '<i class="fa-solid fa-check" style="font-size:12px;"></i>' : ''}
+          </button>
+        `;
+      }).join('');
+    }
+
+    async function applyFontFromDrawer(fontName) {
+      await loadGoogleFont(fontName);
+      if (!GOOGLE_FONTS.includes(fontName)) GOOGLE_FONTS.unshift(fontName);
+
+      const active = fabricCanvas.getActiveObject();
+      if (active && (active.type === 'textbox' || active.type === 'i-text')) {
+        await changeSelectedTextFont(fontName);
+      } else {
+        const tb = new fabric.Textbox('Styled Typography', {
+          left: LOGICAL_W / 2, top: LOGICAL_H / 2, originX: 'center', originY: 'center',
+          width: 440, fontSize: 40, fontFamily: fontName, fill: '#111827', textAlign: 'center',
+          customId: uid('txt'), objectType: 'text'
+        });
+        fabricCanvas.add(tb);
+        fabricCanvas.setActiveObject(tb);
+        fabricCanvas.requestRenderAll();
+      }
+      renderGoogleFontsList();
+    }
+
+    /* ============================================================
+       CHART.JS LIVE ENGINE & EDITOR MODAL
+    ============================================================ */
+    function renderChartToDataUrl(cfg, width = 640, height = 420) {
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = width;
+      offCanvas.height = height;
+      const ctx = offCanvas.getContext('2d');
+
+      const colors = CHART_PALETTES[cfg.palette || 'ocean'] || CHART_PALETTES.ocean;
+      const bgColors = cfg.labels.map((_, i) => colors[i % colors.length]);
+
+      const chart = new Chart(ctx, {
+        type: cfg.type || 'bar',
+        data: {
+          labels: cfg.labels,
+          datasets: [{
+            label: cfg.title || 'Dataset',
+            data: cfg.values,
+            backgroundColor: cfg.type === 'line' ? 'rgba(59, 130, 246, 0.18)' : bgColors,
+            borderColor: cfg.type === 'line' ? '#7d2ae8' : bgColors,
+            borderWidth: cfg.type === 'line' ? 3 : 2,
+            borderRadius: cfg.type === 'bar' ? 8 : 0,
+            tension: 0.35,
+            fill: cfg.type === 'line'
+          }]
+        },
+        options: {
+          responsive: false,
+          animation: false,
+          devicePixelRatio: 2,
+          plugins: {
+            legend: {
+              display: cfg.showLegend !== false,
+              position: 'bottom',
+              labels: { font: { family: 'Plus Jakarta Sans', size: 13, weight: '600' }, color: '#1f2937' }
+            },
+            title: {
+              display: Boolean(cfg.title),
+              text: cfg.title || '',
+              font: { family: 'Plus Jakarta Sans', size: 18, weight: '700' },
+              color: '#111827',
+              padding: { bottom: 14 }
+            }
+          },
+          scales: ['bar', 'line'].includes(cfg.type) ? {
+            y: { beginAtZero: true, grid: { color: 'rgba(148,163,184,0.2)' }, ticks: { color: '#475569' } },
+            x: { grid: { display: false }, ticks: { color: '#475569' } }
+          } : undefined
+        }
+      });
+
+      const url = offCanvas.toDataURL('image/png');
+      chart.destroy();
+      return url;
+    }
+
+    function insertChartElement(type) {
+      const defaultCfg = {
+        type: type || 'bar',
+        title: 'Quarterly Performance',
+        palette: 'ocean',
+        showLegend: true,
+        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+        values: [42, 68, 56, 92]
+      };
+
+      const dataUrl = renderChartToDataUrl(defaultCfg);
+      fabric.Image.fromURL(dataUrl, (img) => {
+        img.set({
+          left: LOGICAL_W / 2,
+          top: LOGICAL_H / 2,
+          originX: 'center',
+          originY: 'center',
+          scaleX: 0.72,
+          scaleY: 0.72,
+          customId: uid('chart'),
+          objectType: 'chart',
+          chartConfig: defaultCfg
+        });
+        fabricCanvas.add(img);
+        fabricCanvas.setActiveObject(img);
+        fabricCanvas.requestRenderAll();
+        if (window.innerWidth < 900) closeToolDrawer();
+        showToast('Double-click chart anytime to edit data');
+      });
+    }
+
+    function openChartEditorModal(chartObj) {
+      if (!chartObj || !chartObj.chartConfig) return;
+      editingChartObject = chartObj;
+      const cfg = JSON.parse(JSON.stringify(chartObj.chartConfig));
+
+      document.getElementById('chartTitleInput').value = cfg.title || '';
+      document.getElementById('chartTypeSelect').value = cfg.type || 'bar';
+      document.getElementById('chartPaletteSelect').value = cfg.palette || 'ocean';
+      document.getElementById('chartLegendCheck').checked = cfg.showLegend !== false;
+
+      const tbody = document.getElementById('chartTableBody');
+      tbody.innerHTML = '';
+      cfg.labels.forEach((lbl, idx) => appendChartRow(lbl, cfg.values[idx] ?? 0));
+
+      openModal('chartModal');
+    }
+
+    function appendChartRow(label = 'New Item', value = 50) {
+      const tbody = document.getElementById('chartTableBody');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="text" class="chart-lbl-input" value="${escapeHtml(label)}" /></td>
+        <td><input type="number" class="chart-val-input" value="${Number(value) || 0}" /></td>
+        <td style="text-align:center;">
+          <button type="button" class="drawer-close" style="color:var(--danger);" onclick="this.closest('tr').remove()">
+            <i class="fa-regular fa-trash-can"></i>
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    function applyChartModalChanges() {
+      if (!editingChartObject) return;
+      const rows = [...document.querySelectorAll('#chartTableBody tr')];
+      if (rows.length === 0) {
+        showToast('Add at least one data row');
+        return;
+      }
+
+      const labels = rows.map(r => r.querySelector('.chart-lbl-input').value.trim() || 'Item');
+      const values = rows.map(r => parseFloat(r.querySelector('.chart-val-input').value) || 0);
+
+      const newCfg = {
+        title: document.getElementById('chartTitleInput').value.trim(),
+        type: document.getElementById('chartTypeSelect').value,
+        palette: document.getElementById('chartPaletteSelect').value,
+        showLegend: document.getElementById('chartLegendCheck').checked,
+        labels,
+        values
+      };
+
+      const dataUrl = renderChartToDataUrl(newCfg);
+      editingChartObject.set('chartConfig', newCfg);
+      editingChartObject.setSrc(dataUrl, () => {
+        fabricCanvas.requestRenderAll();
+        pushHistorySnapshot();
+        scheduleSlideSave();
+        closeModal('chartModal');
+        showToast('Chart updated');
+      });
+    }
+
+    /* ============================================================
+       MEDIA UPLOADS & SLIDE BACKGROUNDS
+    ============================================================ */
+    function handleImageUploadFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imgEl = new Image();
+        imgEl.onload = () => {
+          const maxDim = 1280;
+          let w = imgEl.width;
+          let h = imgEl.height;
+          if (w > maxDim || h > maxDim) {
+            const ratio = Math.min(maxDim / w, maxDim / h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+          const c = document.createElement('canvas');
+          c.width = w;
+          c.height = h;
+          c.getContext('2d').drawImage(imgEl, 0, 0, w, h);
+          addImageSrcToCanvas(c.toDataURL('image/png'));
+        };
+        imgEl.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function insertImageFromUrl() {
+      const url = document.getElementById('imageUrlInput').value.trim();
+      if (!url) return;
+      addImageSrcToCanvas(url, true);
+    }
+
+    function addImageSrcToCanvas(src, crossOrigin = false) {
+      fabric.Image.fromURL(src, (img) => {
+        if (!img || !img.width) {
+          showToast('Failed to load image');
+          return;
+        }
+        const maxW = LOGICAL_W * 0.65;
+        const maxH = LOGICAL_H * 0.65;
+        const scale = Math.min(maxW / img.width, maxH / img.height, 1);
+
+        img.set({
+          left: LOGICAL_W / 2,
+          top: LOGICAL_H / 2,
+          originX: 'center',
+          originY: 'center',
+          scaleX: scale,
+          scaleY: scale,
+          customId: uid('img'),
+          objectType: 'image'
+        });
+        fabricCanvas.add(img);
+        fabricCanvas.setActiveObject(img);
+        fabricCanvas.requestRenderAll();
+        if (window.innerWidth < 900) closeToolDrawer();
+      }, crossOrigin ? { crossOrigin: 'anonymous' } : undefined);
+    }
+
+    function setSlideSolidBg(hex) {
+      const slide = getCurrentSlide();
+      if (!slide) return;
+      slide.background = { type: 'solid', color: hex, css: hex };
+      applySlideBackgroundToFabric(slide.background);
+      scheduleSlideSave();
+      updateSelectionUI();
+    }
+
+    function applyBgPreset(idx) {
+      const slide = getCurrentSlide();
+      const preset = SLIDE_BG_PRESETS[idx];
+      if (!slide || !preset) return;
+      slide.background = JSON.parse(JSON.stringify(preset));
+      applySlideBackgroundToFabric(slide.background);
+      scheduleSlideSave();
+      updateSelectionUI();
+    }
+
+    function toggleSlideAutoAnimate(val) {
+      const slide = getCurrentSlide();
+      if (!slide) return;
+      slide.autoAnimate = val;
+      scheduleSlideSave();
+      renderSlideStrip();
+      updateSelectionUI();
+    }
+
+    function setSlideTransition(tr) {
+      const slide = getCurrentSlide();
+      if (!slide) return;
+      slide.transition = tr;
+      scheduleSlideSave();
+      if (activeToolTab === 'page') renderDrawerContent('page');
+      updateSelectionUI();
+    }
+
+    function openTransitionsModal() {
+      const slide = getCurrentSlide();
+      if (!slide) return;
+      document.getElementById('modalAutoAnimateCheck').checked = Boolean(slide.autoAnimate);
+      document.querySelectorAll('#modalTransitionChips .chip-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tr === (slide.transition || 'slide'));
+      });
+      openModal('transitionsModal');
+    }
+
+    /* ============================================================
+       SLIDE TEMPLATES BUILDER
+    ============================================================ */
+    async function applySlideTemplate(key) {
+      const slide = getCurrentSlide();
+      if (!slide) return;
+
+      isRestoring = true;
+      fabricCanvas.discardActiveObject();
+      fabricCanvas.clear();
+
+      if (key === 'hero') {
+        slide.background = { type: 'gradient', angle: 135, stops: ['#00c4cc', '#7d2ae8'], css: 'linear-gradient(135deg, #00c4cc, #7d2ae8)' };
+        applySlideBackgroundToFabric(slide.background);
+        fabricCanvas.add(
+          new fabric.Rect({ left: 480, top: 140, width: 150, height: 34, rx: 17, ry: 17, fill: 'rgba(255,255,255,0.22)', originX: 'center', originY: 'center', customId: uid('shp'), objectType: 'shape' }),
+          new fabric.Textbox('KEYNOTE 2026', { left: 480, top: 140, width: 150, fontSize: 13, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', fontFamily: 'Plus Jakarta Sans', originX: 'center', originY: 'center', customId: uid('txt'), objectType: 'text' }),
+          new fabric.Textbox('Design Your Future\nWith Clarity', { left: 480, top: 255, width: 720, fontSize: 58, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', fontFamily: 'Plus Jakarta Sans', originX: 'center', originY: 'center', lineHeight: 1.12, customId: uid('txt'), objectType: 'text' }),
+          new fabric.Textbox('Crafted smoothly with Slides & Reveal.js', { left: 480, top: 375, width: 540, fontSize: 22, fill: 'rgba(255,255,255,0.88)', textAlign: 'center', fontFamily: 'Inter', originX: 'center', originY: 'center', customId: uid('txt'), objectType: 'text' })
+        );
+      } else if (key === 'kpi') {
+        slide.background = { type: 'solid', color: '#ffffff', css: '#ffffff' };
+        applySlideBackgroundToFabric(slide.background);
+        const cfg = { type: 'bar', title: 'Revenue Growth ($K)', palette: 'ocean', showLegend: false, labels: ['Q1', 'Q2', 'Q3', 'Q4'], values: [120, 195, 240, 340] };
+        const chartUrl = renderChartToDataUrl(cfg);
+
+        fabricCanvas.add(
+          new fabric.Textbox('Quarterly Performance', { left: 70, top: 68, width: 560, fontSize: 38, fontWeight: 'bold', fill: '#111827', fontFamily: 'Plus Jakarta Sans', customId: uid('txt'), objectType: 'text' }),
+          new fabric.Rect({ left: 70, top: 140, width: 250, height: 150, rx: 16, ry: 16, fill: '#f4edff', customId: uid('shp'), objectType: 'shape' }),
+          new fabric.Textbox('+64%', { left: 95, top: 168, width: 200, fontSize: 52, fontWeight: 'bold', fill: '#7d2ae8', fontFamily: 'Plus Jakarta Sans', customId: uid('txt'), objectType: 'text' }),
+          new fabric.Textbox('Year-over-year expansion across all teams.', { left: 95, top: 232, width: 200, fontSize: 15, fill: '#4b5563', fontFamily: 'Inter', customId: uid('txt'), objectType: 'text' }),
+          new fabric.Rect({ left: 70, top: 315, width: 250, height: 150, rx: 16, ry: 16, fill: '#ecfeff', customId: uid('shp'), objectType: 'shape' }),
+          new fabric.Textbox('98.4%', { left: 95, top: 343, width: 200, fontSize: 48, fontWeight: 'bold', fill: '#0891b2', fontFamily: 'Plus Jakarta Sans', customId: uid('txt'), objectType: 'text' }),
+          new fabric.Textbox('Customer satisfaction index.', { left: 95, top: 407, width: 200, fontSize: 15, fill: '#4b5563', fontFamily: 'Inter', customId: uid('txt'), objectType: 'text' })
+        );
+
+        await new Promise(res => {
+          fabric.Image.fromURL(chartUrl, (img) => {
+            img.set({ left: 360, top: 135, scaleX: 0.84, scaleY: 0.84, customId: uid('chart'), objectType: 'chart', chartConfig: cfg });
+            fabricCanvas.add(img);
+            res();
+          });
+        });
+      } else if (key === 'features') {
+        slide.background = { type: 'solid', color: '#f8fafc', css: '#f8fafc' };
+        applySlideBackgroundToFabric(slide.background);
+        fabricCanvas.add(
+          new fabric.Textbox('Three Core Pillars', { left: 480, top: 75, width: 640, fontSize: 40, fontWeight: 'bold', fill: '#111827', textAlign: 'center', originX: 'center', originY: 'center', fontFamily: 'Plus Jakarta Sans', customId: uid('txt'), objectType: 'text' })
+        );
+        const cards = [
+          { x: 185, color: '#00c4cc', num: '01', title: 'Discover', desc: 'Research insights and identify opportunities fast.' },
+          { x: 480, color: '#3b82f6', num: '02', title: 'Create', desc: 'Prototype expressive layouts and interactive data.' },
+          { x: 775, color: '#7d2ae8', num: '03', title: 'Deliver', desc: 'Present anywhere with smooth Auto-Animate.' }
+        ];
+        cards.forEach(c => {
+          fabricCanvas.add(
+            new fabric.Rect({ left: c.x, top: 315, width: 260, height: 310, rx: 18, ry: 18, fill: '#ffffff', stroke: '#e2e8f0', strokeWidth: 1.5, originX: 'center', originY: 'center', customId: uid('shp'), objectType: 'shape' }),
+            new fabric.Circle({ left: c.x, top: 215, radius: 30, fill: c.color, originX: 'center', originY: 'center', customId: uid('shp'), objectType: 'shape' }),
+            new fabric.Textbox(c.num, { left: c.x, top: 215, width: 50, fontSize: 20, fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', originX: 'center', originY: 'center', fontFamily: 'Plus Jakarta Sans', customId: uid('txt'), objectType: 'text' }),
+            new fabric.Textbox(c.title, { left: c.x, top: 285, width: 210, fontSize: 24, fontWeight: 'bold', fill: '#111827', textAlign: 'center', originX: 'center', originY: 'center', fontFamily: 'Plus Jakarta Sans', customId: uid('txt'), objectType: 'text' }),
+            new fabric.Textbox(c.desc, { left: c.x, top: 360, width: 205, fontSize: 16, fill: '#6b7280', textAlign: 'center', originX: 'center', originY: 'center', fontFamily: 'Inter', customId: uid('txt'), objectType: 'text' })
+          );
+        });
+      } else if (key === 'quote') {
+        slide.background = { type: 'solid', color: '#0f172a', css: '#0f172a' };
+        applySlideBackgroundToFabric(slide.background);
+        fabricCanvas.add(
+          new fabric.Rect({ left: 100, top: 155, width: 90, height: 6, rx: 3, ry: 3, fill: '#00c4cc', customId: uid('shp'), objectType: 'shape' }),
+          new fabric.Textbox('“Simplicity is about subtracting the obvious and adding the meaningful.”', { left: 100, top: 190, width: 760, fontSize: 44, fontWeight: 'bold', fill: '#ffffff', fontFamily: 'Plus Jakarta Sans', lineHeight: 1.25, customId: uid('txt'), objectType: 'text' }),
+          new fabric.Textbox('— John Maeda', { left: 100, top: 385, width: 400, fontSize: 22, fill: '#a5b4fc', fontFamily: 'Inter', customId: uid('txt'), objectType: 'text' })
+        );
+      } else if (key === 'split') {
+        slide.background = { type: 'solid', color: '#ffffff', css: '#ffffff' };
+        applySlideBackgroundToFabric(slide.background);
+        fabricCanvas.add(
+          new fabric.Rect({ left: 0, top: 0, width: 420, height: 540, fill: '#4f46e5', customId: uid('shp'), objectType: 'shape' }),
+          new fabric.Textbox('01', { left: 60, top: 185, width: 280, fontSize: 96, fontWeight: 'bold', fill: 'rgba(255,255,255,0.28)', fontFamily: 'Plus Jakarta Sans', customId: uid('txt'), objectType: 'text' }),
+          new fabric.Textbox('Strategic\nRoadmap', { left: 60, top: 270, width: 310, fontSize: 44, fontWeight: 'bold', fill: '#ffffff', fontFamily: 'Plus Jakarta Sans', customId: uid('txt'), objectType: 'text' }),
+          new fabric.Textbox('Clear execution milestones', { left: 480, top: 165, width: 410, fontSize: 32, fontWeight: 'bold', fill: '#111827', fontFamily: 'Plus Jakarta Sans', customId: uid('txt'), objectType: 'text' }),
+          new fabric.Textbox('• Align design & engineering around measurable goals.\n\n• Ship weekly increments with visual storytelling.\n\n• Present live charts directly from your browser.', { left: 480, top: 235, width: 410, fontSize: 20, fill: '#4b5563', fontFamily: 'Inter', lineHeight: 1.35, customId: uid('txt'), objectType: 'text' })
+        );
+      } else if (key === 'thankyou') {
+        slide.background = { type: 'gradient', angle: 135, stops: ['#e0f7fa', '#f3e8ff'], css: 'linear-gradient(135deg, #e0f7fa, #f3e8ff)' };
+        applySlideBackgroundToFabric(slide.background);
+        fabricCanvas.add(
+          new fabric.Textbox('Thank You!', { left: 480, top: 235, width: 640, fontSize: 64, fontWeight: 'bold', fill: '#4c1d95', textAlign: 'center', originX: 'center', originY: 'center', fontFamily: 'Plus Jakarta Sans', customId: uid('txt'), objectType: 'text' }),
+          new fabric.Textbox('Questions & Discussion  •  hello@slides.app', { left: 480, top: 320, width: 620, fontSize: 22, fill: '#4b5563', textAlign: 'center', originX: 'center', originY: 'center', fontFamily: 'Inter', customId: uid('txt'), objectType: 'text' })
+        );
+      }
+
+      fabricCanvas.renderAll();
+      isRestoring = false;
+      pushHistorySnapshot();
+      saveCurrentSlideImmediate();
+      if (window.innerWidth < 900) closeToolDrawer();
+    }
+
+    /* ============================================================
+       REVEAL.JS GENERATOR, PRESENTER & STANDALONE HTML EXPORT
+    ============================================================ */
+    function buildRevealHtmlDocument(design, isEmbeddedPreview = true) {
+      const fontsSet = new Set(['Plus Jakarta Sans', 'Inter']);
+      const chartsToInit = [];
+
+      design.slides.forEach(s => {
+        (s.fabricJson?.objects || []).forEach(o => {
+          if (o.fontFamily) fontsSet.add(o.fontFamily.replace(/['"]/g, ''));
+        });
+      });
+
+      const googleFontsUrl = `https://fonts.googleapis.com/css2?${[...fontsSet]
+        .map(f => `family=${encodeURIComponent(f).replace(/%20/g, '+')}:ital,wght@0,400;0,600;0,700;0,800;1,400;1,700`)
+        .join('&')}&display=swap`;
+
+      const sectionsHtml = design.slides.map((slide, sIdx) => {
+        const bgAttr = slide.background?.type === 'gradient'
+          ? `data-background-gradient="${slide.background.css}"`
+          : `data-background-color="${slide.background?.color || '#ffffff'}"`;
+        const trAttr = `data-transition="${slide.transition || 'slide'}"`;
+        const aaAttr = slide.autoAnimate ? 'data-auto-animate' : '';
+
+        const objectsHtml = (slide.fabricJson?.objects || []).map((obj, oIdx) => {
+          const dataId = escapeHtml(obj.customId || `obj_${sIdx}_${oIdx}`);
+          const w = (obj.width || 100) * (obj.scaleX || 1);
+          const h = (obj.height || 100) * (obj.scaleY || 1);
+          const originX = obj.originX || 'left';
+          const originY = obj.originY || 'top';
+
+          let left = obj.left || 0;
+          let top = obj.top || 0;
+          if (originX === 'center') left -= w / 2;
+          else if (originX === 'right') left -= w;
+          if (originY === 'center') top -= h / 2;
+          else if (originY === 'bottom') top -= h;
+
+          const angle = obj.angle || 0;
+          const opacity = obj.opacity ?? 1;
+          const baseStyle = `position:absolute; left:${left.toFixed(2)}px; top:${top.toFixed(2)}px; width:${w.toFixed(2)}px; height:${h.toFixed(2)}px; transform:rotate(${angle}deg); transform-origin:center center; opacity:${opacity};`;
+
+          if (obj.objectType === 'chart' && obj.chartConfig) {
+            const cId = `rev_chart_${sIdx}_${oIdx}`;
+            chartsToInit.push({ id: cId, config: obj.chartConfig });
+            return `<div data-id="${dataId}" style="${baseStyle}"><canvas id="${cId}" style="width:100%;height:100%;"></canvas></div>`;
+          }
+
+          if (obj.type === 'textbox' || obj.type === 'i-text' || obj.type === 'text') {
+            const ff = escapeHtml((obj.fontFamily || 'Plus Jakarta Sans').replace(/['"]/g, ''));
+            const fs = obj.fontSize || 24;
+            const fw = obj.fontWeight || 'normal';
+            const fst = obj.fontStyle || 'normal';
+            const td = obj.underline ? 'underline' : 'none';
+            const ta = obj.textAlign || 'left';
+            const lh = obj.lineHeight || 1.16;
+            const col = obj.fill || '#111827';
+            const htmlTxt = escapeHtml(obj.text || '').replace(/\n/g, '<br>');
+            return `<div data-id="${dataId}" style="${baseStyle} font-family:'${ff}',sans-serif; font-size:${fs}px; font-weight:${fw}; font-style:${fst}; text-decoration:${td}; text-align:${ta}; line-height:${lh}; color:${col}; white-space:pre-wrap; word-break:break-word; display:flex; flex-direction:column; justify-content:flex-start;">${htmlTxt}</div>`;
+          }
+
+          if (obj.type === 'rect') {
+            const rx = (obj.rx || 0) * (obj.scaleX || 1);
+            const ry = (obj.ry || 0) * (obj.scaleY || 1);
+            const fill = typeof obj.fill === 'string' ? obj.fill : '#3b82f6';
+            const stroke = obj.stroke && obj.strokeWidth ? `border:${obj.strokeWidth}px solid ${obj.stroke};` : '';
+            return `<div data-id="${dataId}" style="${baseStyle} background:${fill}; border-radius:${rx}px / ${ry}px; ${stroke} box-sizing:border-box;"></div>`;
+          }
+
+          if (obj.type === 'circle') {
+            const fill = typeof obj.fill === 'string' ? obj.fill : '#00c4cc';
+            const stroke = obj.stroke && obj.strokeWidth ? `border:${obj.strokeWidth}px solid ${obj.stroke};` : '';
+            return `<div data-id="${dataId}" style="${baseStyle} background:${fill}; border-radius:50%; ${stroke} box-sizing:border-box;"></div>`;
+          }
+
+          return `<div data-id="${dataId}" class="fabric-obj-placeholder" data-s="${sIdx}" data-o="${oIdx}" style="${baseStyle}"></div>`;
+        }).join('\n');
+
+        return `
+          <section ${bgAttr} ${trAttr} ${aaAttr}>
+            <div class="slide-stage">
+              ${objectsHtml}
+            </div>
+          </section>
+        `;
+      }).join('\n');
+
+      const complexAssetsMap = {};
+      design.slides.forEach((slide, sIdx) => {
+        (slide.fabricJson?.objects || []).forEach((obj, oIdx) => {
+          if (!['chart', 'textbox', 'i-text', 'text', 'rect', 'circle'].includes(obj.type) && obj.objectType !== 'chart') {
+            complexAssetsMap[`${sIdx}_${oIdx}`] = obj;
+          }
+        });
+      });
+
+      return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${escapeHtml(design.title || 'Slides Presentation')}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.min.css" />
+  <link rel="stylesheet" href="${googleFontsUrl}" />
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+    .reveal .slides { text-align: left; }
+    .reveal .slides section { padding: 0 !important; width: ${LOGICAL_W}px !important; height: ${LOGICAL_H}px !important; }
+    .slide-stage { position: relative; width: ${LOGICAL_W}px; height: ${LOGICAL_H}px; overflow: hidden; }
+    .reveal .progress { color: #7d2ae8; height: 4px; }
+    .reveal .controls { color: #7d2ae8; }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+      ${sectionsHtml}
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.min.js"><\/script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"><\/script>
+  <script>
+    const PALETTES = ${JSON.stringify(CHART_PALETTES)};
+    const CHARTS_TO_INIT = ${JSON.stringify(chartsToInit)};
+    const COMPLEX_OBJS = ${JSON.stringify(complexAssetsMap)};
+
+    Object.entries(COMPLEX_OBJS).forEach(([key, objData]) => {
+      const [s, o] = key.split('_');
+      const host = document.querySelector('.fabric-obj-placeholder[data-s="' + s + '"][data-o="' + o + '"]');
+      if (!host) return;
+      const w = Math.max(4, Math.ceil(parseFloat(host.style.width) || 100));
+      const h = Math.max(4, Math.ceil(parseFloat(host.style.height) || 100));
+      const c = new fabric.StaticCanvas(null, { width: w * 2, height: h * 2 });
+      fabric.util.enlivenObjects([objData], (enlivened) => {
+        const item = enlivened[0];
+        if (!item) return;
+        item.set({ left: w, top: h, originX: 'center', originY: 'center', angle: 0 });
+        item.scaleX = (item.scaleX || 1) * 2;
+        item.scaleY = (item.scaleY || 1) * 2;
+        c.add(item);
+        c.renderAll();
+        const img = document.createElement('img');
+        img.src = c.toDataURL({ format: 'png' });
+        img.style.cssText = 'width:100%; height:100%; display:block; object-fit:contain;';
+        host.appendChild(img);
+      });
+    });
+
+    Reveal.initialize({
+      width: ${LOGICAL_W},
+      height: ${LOGICAL_H},
+      margin: 0.02,
+      controls: true,
+      progress: true,
+      center: true,
+      hash: ${!isEmbeddedPreview},
+      history: false,
+      transition: 'slide',
+      autoAnimateDuration: 0.75
+    }).then(() => {
+      CHARTS_TO_INIT.forEach(item => {
+        const canvas = document.getElementById(item.id);
+        if (!canvas) return;
+        const cfg = item.config;
+        const colors = PALETTES[cfg.palette || 'ocean'] || PALETTES.ocean;
+        const bgColors = cfg.labels.map((_, i) => colors[i % colors.length]);
+        new Chart(canvas.getContext('2d'), {
+          type: cfg.type || 'bar',
+          data: {
+            labels: cfg.labels,
+            datasets: [{
+              label: cfg.title || 'Dataset',
+              data: cfg.values,
+              backgroundColor: cfg.type === 'line' ? 'rgba(59,130,246,0.2)' : bgColors,
+              borderColor: cfg.type === 'line' ? '#7d2ae8' : bgColors,
+              borderWidth: cfg.type === 'line' ? 3 : 2,
+              borderRadius: cfg.type === 'bar' ? 8 : 0,
+              tension: 0.35,
+              fill: cfg.type === 'line'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: cfg.showLegend !== false, position: 'bottom' },
+              title: { display: Boolean(cfg.title), text: cfg.title || '', font: { size: 17, weight: 'bold' } }
+            },
+            scales: ['bar', 'line'].includes(cfg.type) ? { y: { beginAtZero: true } } : undefined
+          }
+        });
+      });
+    });
+  <\/script>
+</body>
+</html>`;
+    }
+
+    function launchRevealPresenter(designObj = null) {
+      if (!designObj) {
+        saveCurrentSlideImmediate();
+        designObj = getCurrentDesign();
+      }
+      if (!designObj) return;
+
+      const htmlDoc = buildRevealHtmlDocument(designObj, true);
+      const frame = document.getElementById('presenterFrame');
+      frame.srcdoc = htmlDoc;
+      document.getElementById('presenterOverlay').classList.remove('hidden');
+    }
+
+    function closeRevealPresenter() {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+      document.getElementById('presenterOverlay').classList.add('hidden');
+      document.getElementById('presenterFrame').srcdoc = '';
+    }
+
+    /* ============================================================
+       EXPORT ACTIONS (PNG, Reveal.js HTML, JSON)
+    ============================================================ */
+    function downloadFile(filename, content, mime = 'text/html') {
+      const blob = content instanceof Blob ? content : new Blob([content], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function exportCurrentSlidePng() {
+      fabricCanvas.discardActiveObject();
+      const prevZoom = fabricCanvas.getZoom();
+      const prevW = fabricCanvas.getWidth();
+      const prevH = fabricCanvas.getHeight();
+
+      fabricCanvas.setZoom(2);
+      fabricCanvas.setDimensions({ width: LOGICAL_W * 2, height: LOGICAL_H * 2 });
+      const dataUrl = fabricCanvas.toDataURL({ format: 'png', quality: 1 });
+
+      fabricCanvas.setZoom(prevZoom);
+      fabricCanvas.setDimensions({ width: prevW, height: prevH });
+      fabricCanvas.requestRenderAll();
+
+      const design = getCurrentDesign();
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `${(design?.title || 'slide').replace(/[^\w-]+/g, '_')}_slide_${currentSlideIdx + 1}.png`;
+      a.click();
+      closeModal('exportModal');
+      showToast('Downloaded 1920×1080 PNG');
+    }
+
+    function exportStandaloneRevealHtml() {
+      saveCurrentSlideImmediate();
+      const design = getCurrentDesign();
+      if (!design) return;
+      const html = buildRevealHtmlDocument(design, false);
+      const name = `${(design.title || 'presentation').replace(/[^\w-]+/g, '_')}.html`;
+      downloadFile(name, html, 'text/html;charset=utf-8');
+      closeModal('exportModal');
+      showToast('Reveal.js presentation exported');
+    }
+
+    function exportProjectJson() {
+      saveCurrentSlideImmediate();
+      const design = getCurrentDesign();
+      if (!design) return;
+      const name = `${(design.title || 'presentation').replace(/[^\w-]+/g, '_')}.json`;
+      downloadFile(name, JSON.stringify(design, null, 2), 'application/json');
+      closeModal('exportModal');
+      showToast('Project JSON downloaded');
+    }
+
+    /* ============================================================
+       EVENT BINDINGS & BOOTSTRAP
+    ============================================================ */
+    function bindGlobalEvents() {
+      document.getElementById('btnFabCreate').onclick = createNewDesign;
+      document.getElementById('btnDesktopCreate').onclick = createNewDesign;
+      document.getElementById('btnEmptyCreate').onclick = createNewDesign;
+
+      document.getElementById('filterType').onchange = renderDashboard;
+      document.getElementById('sortBy').onchange = renderDashboard;
+      document.getElementById('dashSearchInput').oninput = renderDashboard;
+
+      document.getElementById('btnSortDir').onclick = () => {
+        sortAscending = !sortAscending;
+        document.getElementById('sortDirIcon').className = sortAscending
+          ? 'fa-solid fa-arrow-down-a-z'
+          : 'fa-solid fa-arrow-up-z-a';
+        renderDashboard();
+      };
+
+      document.getElementById('btnToggleView').onclick = () => {
+        listViewMode = !listViewMode;
+        document.getElementById('viewModeIcon').className = listViewMode
+          ? 'fa-solid fa-grip'
+          : 'fa-solid fa-list';
+        renderDashboard();
+      };
+
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#cardContextMenu') && !e.target.closest('.card-dots-btn')) {
+          document.getElementById('cardContextMenu').classList.add('hidden');
+        }
+        if (!e.target.closest('#editorMoreMenu') && !e.target.closest('#btnEditorMore')) {
+          document.getElementById('editorMoreMenu').classList.add('hidden');
+        }
+      });
+
+      document.getElementById('btnConfirmRename').onclick = () => {
+        const val = document.getElementById('renameInput').value.trim() || 'Untitled Design';
+        const d = designs.find(x => x.id === pendingTargetDesignId);
+        if (d) {
+          d.title = val;
+          d.updatedAt = Date.now();
+          persistDesign(d);
+          renderDashboard();
+          if (currentDesignId === d.id) {
+            document.getElementById('editorTitleInput').value = val;
+          }
+          showToast('Renamed');
+        }
+        closeModal('renameModal');
+      };
+
+      document.getElementById('renameInput').onkeydown = (e) => {
+        if (e.key === 'Enter') document.getElementById('btnConfirmRename').click();
+      };
+
+      document.getElementById('btnConfirmDelete').onclick = () => {
+        const idx = designs.findIndex(x => x.id === pendingTargetDesignId);
+        if (idx !== -1) {
+          const [removed] = designs.splice(idx, 1);
+          removeDesignFromStorage(removed.id);
+          renderDashboard();
+          showToast('Presentation deleted');
+        }
+        closeModal('deleteModal');
+      };
+
+      document.getElementById('btnBackDash').onclick = () => {
+        saveCurrentSlideImmediate();
+        closeToolDrawer();
+        document.getElementById('editorView').classList.add('hidden');
+        document.getElementById('dashboardView').classList.remove('hidden');
+        currentDesignId = null;
+        renderDashboard();
+      };
+
+      document.getElementById('editorTitleInput').oninput = (e) => {
+        const d = getCurrentDesign();
+        if (d) {
+          d.title = e.target.value;
+          scheduleSlideSave();
+        }
+      };
+
+      document.getElementById('btnUndo').onclick = performUndo;
+      document.getElementById('btnRedo').onclick = performRedo;
+      document.getElementById('btnAddSlide').onclick = addNewBlankSlide;
+      document.getElementById('btnTransitionsModal').onclick = openTransitionsModal;
+      document.getElementById('btnPresent').onclick = () => launchRevealPresenter();
+      document.getElementById('btnExport').onclick = () => openModal('exportModal');
+
+      document.getElementById('btnEditorMore').onclick = (e) => {
+        e.stopPropagation();
+        const menu = document.getElementById('editorMoreMenu');
+        const rect = e.currentTarget.getBoundingClientRect();
+        menu.innerHTML = `
+          <button class="context-menu-item" onclick="duplicateCurrentSlide(); document.getElementById('editorMoreMenu').classList.add('hidden');">
+            <i class="fa-regular fa-copy"></i> Duplicate Slide
+          </button>
+          <button class="context-menu-item" onclick="openTransitionsModal(); document.getElementById('editorMoreMenu').classList.add('hidden');">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Slide Animations
+          </button>
+          <button class="context-menu-item danger" onclick="deleteCurrentSlide(); document.getElementById('editorMoreMenu').classList.add('hidden');">
+            <i class="fa-regular fa-trash-can"></i> Delete Current Slide
+          </button>
+        `;
+        menu.classList.remove('hidden');
+        menu.style.left = `${Math.max(10, rect.right - 200)}px`;
+        menu.style.top = `${rect.bottom + 8}px`;
+      };
+
+      document.querySelectorAll('.rail-btn').forEach(btn => {
+        btn.onclick = () => toggleToolDrawer(btn.dataset.tab);
+      });
+      document.getElementById('btnCloseDrawer').onclick = closeToolDrawer;
+
+      document.getElementById('btnZoomIn').onclick = () => {
+        userZoomMultiplier = Math.min(2, +(userZoomMultiplier + 0.15).toFixed(2));
+        document.getElementById('zoomLabel').textContent = `${Math.round(userZoomMultiplier * 100)}%`;
+        applyCanvasScale();
+      };
+      document.getElementById('btnZoomOut').onclick = () => {
+        userZoomMultiplier = Math.max(0.4, +(userZoomMultiplier - 0.15).toFixed(2));
+        document.getElementById('zoomLabel').textContent = `${Math.round(userZoomMultiplier * 100)}%`;
+        applyCanvasScale();
+      };
+      document.getElementById('btnZoomFit').onclick = () => {
+        userZoomMultiplier = 1;
+        document.getElementById('zoomLabel').textContent = 'Fit';
+        applyCanvasScale();
+      };
+
+      document.getElementById('btnAddChartRow').onclick = () => appendChartRow('New', 40);
+      document.getElementById('btnApplyChart').onclick = applyChartModalChanges;
+
+      document.getElementById('modalAutoAnimateCheck').onchange = (e) => toggleSlideAutoAnimate(e.target.checked);
+      document.querySelectorAll('#modalTransitionChips .chip-btn').forEach(btn => {
+        btn.onclick = () => {
+          setSlideTransition(btn.dataset.tr);
+          document.querySelectorAll('#modalTransitionChips .chip-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        };
+      });
+
+      document.getElementById('btnExportPng').onclick = exportCurrentSlidePng;
+      document.getElementById('btnExportRevealHtml').onclick = exportStandaloneRevealHtml;
+      document.getElementById('btnExportJson').onclick = exportProjectJson;
+
+      document.getElementById('btnClosePresenter').onclick = closeRevealPresenter;
+      document.getElementById('btnPresenterFullscreen').onclick = () => {
+        const overlay = document.getElementById('presenterOverlay');
+        if (!document.fullscreenElement) overlay.requestFullscreen?.().catch(() => {});
+        else document.exitFullscreen?.().catch(() => {});
+      };
+      document.getElementById('btnPresenterOverview').onclick = () => {
+        const frameWin = document.getElementById('presenterFrame').contentWindow;
+        frameWin?.Reveal?.toggleOverview?.();
+      };
+
+      document.addEventListener('keydown', (e) => {
+        if (document.getElementById('editorView').classList.contains('hidden')) return;
+        if (!document.getElementById('presenterOverlay').classList.contains('hidden')) {
+          if (e.key === 'Escape') closeRevealPresenter();
+          return;
+        }
+        const tag = document.activeElement?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+        const active = fabricCanvas?.getActiveObject();
+        if (active && active.isEditing) return;
+
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+          e.preventDefault();
+          if (e.shiftKey) performRedo();
+          else performUndo();
+        } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+          e.preventDefault();
+          performRedo();
+        } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+          e.preventDefault();
+          duplicateSelectedObject();
+        } else if (e.key === 'Delete' || e.key === 'Backspace') {
+          if (active) {
+            e.preventDefault();
+            deleteSelectedObject();
+          }
+        } else if (e.key === 'Escape') {
+          deselectAll();
+          closeToolDrawer();
+        } else if (active && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+          e.preventDefault();
+          const step = e.shiftKey ? 10 : 2;
+          if (e.key === 'ArrowLeft') active.left -= step;
+          if (e.key === 'ArrowRight') active.left += step;
+          if (e.key === 'ArrowUp') active.top -= step;
+          if (e.key === 'ArrowDown') active.top += step;
+          active.setCoords();
+          fabricCanvas.requestRenderAll();
+          scheduleSlideSave();
+        }
+      });
+
+      window.addEventListener('resize', () => {
+        applyCanvasScale();
+        renderMobileBottomBar(fabricCanvas?.getActiveObject());
+      });
+    }
+
+    async function initApp() {
+      bindGlobalEvents();
+      designs = await loadDesignsFromStorage();
+      renderDashboard();
+    }
+
+    initApp();
+  </script>
+</body>
+</html>
+
+              
